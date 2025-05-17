@@ -1,8 +1,8 @@
+// src/components/Diagramador/CanvasEditor.tsx
 import { useDrop } from "react-dnd";
-import { useState } from "react";
 import { Rnd } from "react-rnd";
 
-type Elemento = {
+export type Elemento = {
   id: string;
   tipo: string;
   x: number;
@@ -11,68 +11,81 @@ type Elemento = {
   height: number;
 };
 
-export default function CanvasEditor({
-  zoom,
-  width,
-  height,
-}: {
+type Props = {
+  tabId: string;
   zoom: number;
   width: number;
   height: number;
-}) {
-  const [elementos, setElementos] = useState<Elemento[]>([]);
+  elementos: Elemento[];
+  onChange: (tabId: string, updater: (prev: Elemento[]) => Elemento[]) => void;
+};
 
-  const [, dropRef] = useDrop(() => ({
-    accept: "COMPONENTE",
-    drop: (item: { tipo: string }, monitor) => {
-      const offset = monitor.getClientOffset();
-      if (!offset) return;
+export default function CanvasEditor({
+  tabId,
+  zoom,
+  width,
+  height,
+  elementos,
+  onChange,
+}: Props) {
+  // ID único para evitar colisiones si llegas a renderizar varios canvases a la vez
+  const canvasId = `canvas-area-${tabId}`;
 
-      const canvas = document.getElementById("canvas-area");
-      if (!canvas) return;
+  const [, dropRef] = useDrop(
+    () => ({
+      accept: "COMPONENTE",
+      drop: (item: { tipo: string }, monitor) => {
+        const offset = monitor.getClientOffset();
+        if (!offset) return;
 
-      const rect = canvas.getBoundingClientRect();
-      const x = (offset.x - rect.left) / zoom;
-      const y = (offset.y - rect.top) / zoom;
+        const canvas = document.getElementById(canvasId);
+        if (!canvas) return;
 
-      setElementos((prev) => [
-        ...prev,
-        {
+        const rect = canvas.getBoundingClientRect();
+        const x = (offset.x - rect.left) / zoom;
+        const y = (offset.y - rect.top) / zoom;
+
+        const nuevo: Elemento = {
           id: crypto.randomUUID(),
           tipo: item.tipo,
           x,
           y,
           width: 120,
           height: 40,
-        },
-      ]);
-    },
-  }));
+        };
 
-  const handleDragStop = (id: string, x: number, y: number) => {
-    setElementos((prev) =>
+        // El elemento se añade a la pestaña actualmente activa
+        onChange(tabId, (prev) => [...prev, nuevo]);
+      },
+    }),
+    // Dependencias: se recalcula al cambiar de pestaña o de zoom
+    [tabId, zoom]
+  );
+
+  const handleDragStop = (id: string, xPos: number, yPos: number) => {
+    onChange(tabId, (prev) =>
       prev.map((el) =>
-        el.id === id ? { ...el, x: x / zoom, y: y / zoom } : el
+        el.id === id ? { ...el, x: xPos / zoom, y: yPos / zoom } : el
       )
     );
   };
 
   const handleResizeStop = (
     id: string,
-    x: number,
-    y: number,
-    width: number,
-    height: number
+    xPos: number,
+    yPos: number,
+    w: number,
+    h: number
   ) => {
-    setElementos((prev) =>
+    onChange(tabId, (prev) =>
       prev.map((el) =>
         el.id === id
           ? {
               ...el,
-              x: x / zoom,
-              y: y / zoom,
-              width: width / zoom,
-              height: height / zoom,
+              x: xPos / zoom,
+              y: yPos / zoom,
+              width: w / zoom,
+              height: h / zoom,
             }
           : el
       )
@@ -92,7 +105,7 @@ export default function CanvasEditor({
       }}
     >
       <div
-        id="canvas-area"
+        id={canvasId}
         ref={(node) => {
           if (node) dropRef(node);
         }}
@@ -118,7 +131,7 @@ export default function CanvasEditor({
               y: el.y * zoom,
             }}
             onDragStop={(_, data) => handleDragStop(el.id, data.x, data.y)}
-            onResizeStop={(_, __, ref, delta, pos) =>
+            onResizeStop={(_, __, ref, ___, pos) =>
               handleResizeStop(
                 el.id,
                 pos.x,
