@@ -11,7 +11,15 @@ type Elemento = {
   height: number;
 };
 
-export default function CanvasEditor({ zoom }: { zoom: number }) {
+export default function CanvasEditor({
+  zoom,
+  width,
+  height,
+}: {
+  zoom: number;
+  width: number;
+  height: number;
+}) {
   const [elementos, setElementos] = useState<Elemento[]>([]);
 
   const [, dropRef] = useDrop(() => ({
@@ -43,7 +51,9 @@ export default function CanvasEditor({ zoom }: { zoom: number }) {
 
   const handleDragStop = (id: string, x: number, y: number) => {
     setElementos((prev) =>
-      prev.map((el) => (el.id === id ? { ...el, x: x / zoom, y: y / zoom } : el))
+      prev.map((el) =>
+        el.id === id ? { ...el, x: x / zoom, y: y / zoom } : el
+      )
     );
   };
 
@@ -69,27 +79,26 @@ export default function CanvasEditor({ zoom }: { zoom: number }) {
     );
   };
 
-return (
-  <div
-    style={{
-      flex: 1,
-      overflow: "auto",
-      backgroundColor: "#f0f0f0",
-      display: "flex",
-      justifyContent: "center",     // ← centra horizontalmente el canvas
-      alignItems: "flex-start",     // ← pega el canvas arriba
-      padding: 20,                  // ← espacio alrededor para que no esté pegado
-    }}
-  >
-
+  return (
+    <div
+      style={{
+        flex: 1,
+        overflow: "auto",
+        backgroundColor: "#f0f0f0",
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "flex-start",
+        padding: 20,
+      }}
+    >
       <div
         id="canvas-area"
         ref={(node) => {
           if (node) dropRef(node);
         }}
         style={{
-          width: 400 * zoom,
-          height: 700 * zoom,
+          width: width * zoom,
+          height: height * zoom,
           backgroundColor: "#fff",
           border: "1px solid #ccc",
           position: "relative",
