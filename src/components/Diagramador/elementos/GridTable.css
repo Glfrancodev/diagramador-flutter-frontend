@@ -1,0 +1,42 @@
+.grid-table {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid #ccc;
+  background: #fff;
+  user-select: none;
+}
+
+.row {
+  display: flex;
+  width: fit-content;
+}
+
+.cell {
+  border: 1px solid #ccc;
+  padding: 4px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  position: relative;
+}
+
+.header-cell {
+  background: #e5e7eb;
+  font-weight: bold;
+}
+
+.content {
+  width: 100%;
+  height: 100%;
+  cursor: text;
+}
+
+.col-resizer {
+  position: absolute;
+  top: 0;
+  right: -4px;
+  width: 8px;
+  height: 100%;
+  cursor: col-resize;
+  z-index: 10;
+}

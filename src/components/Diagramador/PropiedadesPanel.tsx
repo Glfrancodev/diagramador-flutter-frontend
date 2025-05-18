@@ -1,0 +1,236 @@
+// src/components/Diagramador/PropiedadesPanel.tsx
+import { useState } from 'react';
+import type { Elemento } from './CanvasEditor';
+
+type Props = {
+  elemento: Elemento | null;
+  onUpdate: (fn: (el: Elemento) => Elemento) => void;
+};
+
+export default function PropiedadesPanel({ elemento, onUpdate }: Props) {
+  if (!elemento) return <div style={{ padding: 10 }}>Selecciona un elemento…</div>;
+
+  const set = (p: any) =>
+    onUpdate((el) => ({ ...el, props: { ...el.props, ...p } }));
+
+  const toggleLock = () => {
+    set({ locked: !elemento.props?.locked });
+  };
+
+  const bloqueBase = (
+    <div style={{ marginTop: 10 }}>
+      <button
+        onClick={toggleLock}
+        style={{
+          width: '100%',
+          padding: 6,
+          background: elemento.props?.locked ? '#ef4444' : '#10b981',
+          color: '#fff',
+          border: 'none',
+          borderRadius: 4,
+          cursor: 'pointer',
+        }}
+      >
+        {elemento.props?.locked ? '🔒 Movimiento bloqueado' : '🔓 Movimiento libre'}
+      </button>
+    </div>
+  );
+
+  /* ------------------- SELECTOR ------------------- */
+  if (elemento.tipo === 'Selector') {
+    const lista = elemento.props?.options ?? [];
+    const [texto, setTexto] = useState(lista.join('\n'));
+
+    const apply = (v: string) => {
+      setTexto(v);
+      set({
+        options: v.split('\n').map((s) => s.trim()).filter(Boolean),
+      });
+    };
+
+    return (
+      <div style={{ padding: 10 }}>
+        <h4>Selector</h4>
+
+        <label style={{ display: 'block', marginBottom: 6 }}>
+          Opciones (una por línea)
+          <textarea
+            style={{ width: '100%', height: 100 }}
+            value={texto}
+            onChange={(e) => apply(e.target.value)}
+          />
+        </label>
+
+        <label style={{ display: 'block', marginBottom: 6 }}>
+          Tamaño de texto (px):
+          <input
+            type="number"
+            min={8}
+            max={72}
+            value={elemento.props?.fontSize ?? 14}
+            onChange={(e) => set({ fontSize: Number(e.target.value) || 14 })}
+            style={{ width: '100%', marginTop: 4 }}
+          />
+        </label>
+
+        {bloqueBase}
+      </div>
+    );
+  }
+
+  /* ------------------- BOTÓN ------------------- */
+  if (elemento.tipo === 'Boton') {
+    return (
+      <div style={{ padding: 10 }}>
+        <h4>Botón</h4>
+
+        <label style={{ display: 'block', marginBottom: 6 }}>
+          Texto:
+          <input
+            type="text"
+            value={elemento.props?.texto || ''}
+            onChange={(e) => set({ texto: e.target.value })}
+            style={{ width: '100%', marginTop: 4 }}
+          />
+        </label>
+
+        <label style={{ display: 'block', marginBottom: 6 }}>
+          Color:
+          <input
+            type="color"
+            value={elemento.props?.color || '#007bff'}
+            onChange={(e) => set({ color: e.target.value })}
+            style={{ width: '100%', marginTop: 4 }}
+          />
+        </label>
+
+        <label style={{ display: 'block', marginBottom: 6 }}>
+          Tamaño de texto (px):
+          <input
+            type="number"
+            min={8}
+            max={72}
+            value={elemento.props?.fontSize ?? 14}
+            onChange={(e) => set({ fontSize: Number(e.target.value) || 14 })}
+            style={{ width: '100%', marginTop: 4 }}
+          />
+        </label>
+
+        {bloqueBase}
+      </div>
+    );
+  }
+
+  /* ------------------- CHECKBOX ------------------- */
+  if (elemento.tipo === 'Checkbox') {
+    return (
+      <div style={{ padding: 10 }}>
+        <h4>Checkbox</h4>
+
+        <label style={{ display: 'block', marginBottom: 6 }}>
+          Texto:
+          <input
+            type="text"
+            value={elemento.props?.texto || ''}
+            onChange={(e) => set({ texto: e.target.value })}
+            style={{ width: '100%', marginTop: 4 }}
+          />
+        </label>
+
+        <label style={{ display: 'block', marginBottom: 6 }}>
+          Tamaño de texto (px):
+          <input
+            type="number"
+            min={8}
+            max={72}
+            value={elemento.props?.fontSize ?? 14}
+            onChange={(e) => set({ fontSize: Number(e.target.value) || 14 })}
+            style={{ width: '100%', marginTop: 4 }}
+          />
+        </label>
+
+        {bloqueBase}
+      </div>
+    );
+  }
+
+  /* ------------------- TABLA ------------------- */
+  if (elemento.tipo === 'Tabla') {
+    const filas = elemento.props?.data?.length ?? 2;
+    const columnas = elemento.props?.headers?.length ?? 3;
+
+    return (
+      <div style={{ padding: 10 }}>
+        <h4>Tabla</h4>
+
+        <label>
+          Filas:
+          <input
+            type="number"
+            min={1}
+            max={50}
+            value={filas}
+            onChange={(e) => {
+              const n = parseInt(e.target.value);
+              const old = elemento.props?.data || [];
+              const updated = [...old];
+              while (updated.length < n)
+                updated.push(Array(columnas).fill('...'));
+              updated.length = n;
+              set({ data: updated });
+            }}
+            style={{ width: '100%', marginBottom: 8 }}
+          />
+        </label>
+
+        <label>
+          Columnas:
+          <input
+            type="number"
+            min={1}
+            max={10}
+            value={columnas}
+            onChange={(e) => {
+              const n = parseInt(e.target.value);
+              const oldData = elemento.props?.data || [];
+              const newData = oldData.map((fila: string[]) => {
+                const f = [...fila];
+                while (f.length < n) f.push('...');
+                f.length = n;
+                return f;
+              });
+
+              const newHeaders = [...(elemento.props?.headers || [])];
+              while (newHeaders.length < n)
+                newHeaders.push(`Col ${newHeaders.length + 1}`);
+              newHeaders.length = n;
+
+              const newWidths = [...(elemento.props?.colWidths || [])];
+              while (newWidths.length < n) newWidths.push(120);
+              newWidths.length = n;
+
+              set({ data: newData, headers: newHeaders, colWidths: newWidths });
+            }}
+            style={{ width: '100%', marginBottom: 8 }}
+          />
+        </label>
+
+        <label>
+          Tamaño de texto (px):
+          <input
+            type="number"
+            min={8}
+            max={30}
+            value={elemento.props?.fontSize ?? 14}
+            onChange={(e) => set({ fontSize: parseInt(e.target.value) || 14 })}
+            style={{ width: '100%', marginBottom: 8 }}
+          />
+        </label>
+
+        {bloqueBase}
+      </div>
+    );
+  }
+
+  return <div style={{ padding: 10 }}>Sin propiedades editables</div>;
+}

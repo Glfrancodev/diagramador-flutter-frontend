@@ -1,6 +1,7 @@
 // src/components/Diagramador/CanvasEditor.tsx
-import { useDrop } from "react-dnd";
-import { Rnd } from "react-rnd";
+import { useDrop } from 'react-dnd';
+import { Rnd } from 'react-rnd';
+import { REGISTRY } from './elementos/registry';
 
 export type Elemento = {
   id: string;
@@ -9,6 +10,10 @@ export type Elemento = {
   y: number;
   width: number;
   height: number;
+  props?: {
+    locked?: boolean;
+    [key: string]: any;
+  };
 };
 
 type Props = {
@@ -17,7 +22,27 @@ type Props = {
   width: number;
   height: number;
   elementos: Elemento[];
-  onChange: (tabId: string, updater: (prev: Elemento[]) => Elemento[]) => void;
+  onChange: (tabId: string, up: (p: Elemento[]) => Elemento[]) => void;
+  onSelect?: (id: string | null) => void;
+  selectedElementId?: string | null;
+};
+
+const defaultProps = (tipo: string) => {
+  if (tipo === 'Selector') return { options: ['Opción 1', 'Opción 2'], fontSize: 14 };
+  if (tipo === 'Boton') return { texto: 'Botón', color: '#007bff', fontSize: 14 };
+  if (tipo === 'Checkbox') return { texto: 'Opción', fontSize: 14 };
+  if (tipo === 'Tabla') {
+    return {
+      headers: ['Col 1', 'Col 2', 'Col 3'],
+      data: [
+        ['A1', 'B1', 'C1'],
+        ['A2', 'B2', 'C2'],
+      ],
+      colWidths: [120, 120, 120],
+      fontSize: 14,
+    };
+  }
+  return {};
 };
 
 export default function CanvasEditor({
@@ -27,20 +52,19 @@ export default function CanvasEditor({
   height,
   elementos,
   onChange,
+  onSelect,
+  selectedElementId,
 }: Props) {
-  // ID único para evitar colisiones si llegas a renderizar varios canvases a la vez
   const canvasId = `canvas-area-${tabId}`;
 
   const [, dropRef] = useDrop(
     () => ({
-      accept: "COMPONENTE",
+      accept: 'COMPONENTE',
       drop: (item: { tipo: string }, monitor) => {
         const offset = monitor.getClientOffset();
         if (!offset) return;
-
         const canvas = document.getElementById(canvasId);
         if (!canvas) return;
-
         const rect = canvas.getBoundingClientRect();
         const x = (offset.x - rect.left) / zoom;
         const y = (offset.y - rect.top) / zoom;
@@ -52,43 +76,72 @@ export default function CanvasEditor({
           y,
           width: 120,
           height: 40,
+          props: defaultProps(item.tipo),
         };
 
-        // El elemento se añade a la pestaña actualmente activa
         onChange(tabId, (prev) => [...prev, nuevo]);
       },
     }),
-    // Dependencias: se recalcula al cambiar de pestaña o de zoom
     [tabId, zoom]
   );
 
-  const handleDragStop = (id: string, xPos: number, yPos: number) => {
-    onChange(tabId, (prev) =>
-      prev.map((el) =>
-        el.id === id ? { ...el, x: xPos / zoom, y: yPos / zoom } : el
-      )
-    );
+  const setDropRef = (n: HTMLDivElement | null) => {
+    if (n) dropRef(n);
   };
 
-  const handleResizeStop = (
-    id: string,
-    xPos: number,
-    yPos: number,
-    w: number,
-    h: number
-  ) => {
-    onChange(tabId, (prev) =>
-      prev.map((el) =>
-        el.id === id
+  const move = (id: string, x: number, y: number, w?: number, h?: number) =>
+    onChange(tabId, (p) =>
+      p.map((e) =>
+        e.id === id
           ? {
-              ...el,
-              x: xPos / zoom,
-              y: yPos / zoom,
-              width: w / zoom,
-              height: h / zoom,
+              ...e,
+              x: x / zoom,
+              y: y / zoom,
+              width: w !== undefined ? w / zoom : e.width,
+              height: h !== undefined ? h / zoom : e.height,
             }
-          : el
+          : e
       )
+    );
+
+  const renderContenido = (el: Elemento) => {
+    const Comp = REGISTRY[el.tipo];
+    if (Comp) {
+      const isTabla = el.tipo === 'Tabla';
+      return (
+        <Comp
+          {...el.props}
+          zoom={zoom}
+          onChange={
+            isTabla
+              ? (next: any) =>
+                  onChange(tabId, (prev) =>
+                    prev.map((e) =>
+                      e.id === el.id ? { ...e, props: { ...e.props, ...next } } : e
+                    )
+                  )
+              : undefined
+          }
+        />
+      );
+    }
+
+    return (
+      <div
+        style={{
+          background: '#007bff',
+          color: '#fff',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          borderRadius: 4,
+          width: '100%',
+          height: '100%',
+          fontSize: 14 * zoom,
+        }}
+      >
+        {el.tipo}
+      </div>
     );
   };
 
@@ -96,63 +149,51 @@ export default function CanvasEditor({
     <div
       style={{
         flex: 1,
-        overflow: "auto",
-        backgroundColor: "#f0f0f0",
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "flex-start",
+        overflow: 'auto',
+        background: '#f0f0f0',
         padding: 20,
+        display: 'flex',
+        justifyContent: 'center',
       }}
     >
       <div
         id={canvasId}
-        ref={(node) => {
-          if (node) dropRef(node);
-        }}
+        ref={setDropRef}
+        onMouseDown={() => onSelect?.(null)}
         style={{
           width: width * zoom,
           height: height * zoom,
-          backgroundColor: "#fff",
-          border: "1px solid #ccc",
-          position: "relative",
-          transformOrigin: "top left",
+          background: '#fff',
+          border: '1px solid #ccc',
+          position: 'relative',
         }}
       >
         {elementos.map((el) => (
           <Rnd
             key={el.id}
             bounds="parent"
-            size={{
-              width: el.width * zoom,
-              height: el.height * zoom,
-            }}
-            position={{
-              x: el.x * zoom,
-              y: el.y * zoom,
-            }}
-            onDragStop={(_, data) => handleDragStop(el.id, data.x, data.y)}
+            enableResizing
+            disableDragging={el.props?.locked === true}
+            size={{ width: el.width * zoom, height: el.height * zoom }}
+            position={{ x: el.x * zoom, y: el.y * zoom }}
+            dragCancel=".no-drag"
+            onDragStop={(_, d) => move(el.id, d.x, d.y)}
             onResizeStop={(_, __, ref, ___, pos) =>
-              handleResizeStop(
-                el.id,
-                pos.x,
-                pos.y,
-                ref.offsetWidth,
-                ref.offsetHeight
-              )
+              move(el.id, pos.x, pos.y, ref.offsetWidth, ref.offsetHeight)
             }
+            onClick={() => onSelect?.(el.id)}
             style={{
-              backgroundColor: "#007bff",
-              color: "#fff",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
+              border:
+                el.id === selectedElementId
+                  ? '2px solid #2563eb'
+                  : '1px solid transparent',
               borderRadius: 4,
-              cursor: "move",
-              position: "absolute",
-              fontSize: 14 * zoom,
+              boxSizing: 'border-box',
+              background: el.props?.locked ? '#f9fafb' : undefined,
+              cursor: el.props?.locked ? 'default' : 'move',
             }}
           >
-            {el.tipo}
+            {renderContenido(el)}
           </Rnd>
         ))}
       </div>

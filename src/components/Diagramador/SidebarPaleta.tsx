@@ -1,18 +1,19 @@
 // src/components/Diagramador/SidebarPaleta.tsx
-
-import { useDrag } from "react-dnd";
+import { useDrag } from 'react-dnd';
 
 const COMPONENTES = [
-  { tipo: "Boton", label: "Botón" },
-  // puedes agregar más componentes aquí
+  { tipo: 'Boton',    label: 'Botón' },
+  { tipo: 'Selector', label: 'Selector' },
+  { tipo: 'Checkbox', label: 'Checkbox' },
+  { tipo: 'Tabla', label: 'Tabla' },
 ];
 
 export default function SidebarPaleta() {
   return (
     <div>
       <h3 style={{ marginTop: 0 }}>Paleta</h3>
-      {COMPONENTES.map((comp) => (
-        <DraggableItem key={comp.tipo} tipo={comp.tipo} label={comp.label} />
+      {COMPONENTES.map((c) => (
+        <DraggableItem key={c.tipo} tipo={c.tipo} label={c.label} />
       ))}
     </div>
   );
@@ -20,29 +21,28 @@ export default function SidebarPaleta() {
 
 function DraggableItem({ tipo, label }: { tipo: string; label: string }) {
   const [{ isDragging }, dragRef] = useDrag(() => ({
-    type: "COMPONENTE",
+    type: 'COMPONENTE',
     item: { tipo },
-    collect: (monitor) => ({
-      isDragging: monitor.isDragging(),
-    }),
+    collect: (mon) => ({ isDragging: mon.isDragging() }),
   }));
 
   return (
-    <div
-      ref={(node) => {
-        if (node) dragRef(node); // ✅ esta forma evita el error de tipo
-      }}
-      style={{
-        padding: 8,
-        marginBottom: 10,
-        backgroundColor: isDragging ? "#ddd" : "#fff",
-        border: "1px solid #999",
-        borderRadius: 4,
-        cursor: "grab",
-        userSelect: "none",
-      }}
-    >
-      {label}
-    </div>
+<div
+  ref={(n) => {
+    if (n) dragRef(n);
+  }}
+  style={{
+    padding: 8,
+    marginBottom: 10,
+    background: isDragging ? '#ddd' : '#fff',
+    border: '1px solid #999',
+    borderRadius: 4,
+    cursor: 'grab',
+    userSelect: 'none',
+  }}
+>
+  {label}
+</div>
+
   );
 }

@@ -1,0 +1,36 @@
+import React from 'react';
+
+type Props = {
+  options?: string[];
+  fontSize?: number; // ✅ nuevo prop
+  zoom: number;
+};
+
+const SelectorComp: React.FC<Props> = ({
+  options = ['Opción 1', 'Opción 2'],
+  fontSize = 14, // ✅ valor por defecto
+  zoom,
+}) => (
+  <select
+    className="no-drag"
+    style={{
+      width: '100%',
+      height: '100%',
+      fontSize: fontSize * zoom,
+      padding: '4px 8px',
+      border: '1px solid #ccc',
+      borderRadius: 4,
+      background: '#fff',
+      color: '#333',
+      overflow: 'hidden',         // ✅ evita desbordes
+      whiteSpace: 'nowrap',       // ✅ sin saltos de línea
+      textOverflow: 'ellipsis',   // ✅ recorta con ...
+    }}
+  >
+    {options.map((op, i) => (
+      <option key={i}>{op}</option>
+    ))}
+  </select>
+);
+
+export default SelectorComp;
