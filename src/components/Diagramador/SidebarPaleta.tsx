@@ -9,15 +9,8 @@ const COMPONENTES = [
 
 export default function SidebarPaleta() {
   return (
-    <div
-      style={{
-        width: 200,
-        backgroundColor: "#f7f7f7",
-        borderRight: "1px solid #ccc",
-        padding: 10,
-      }}
-    >
-      <h3>Paleta</h3>
+    <div>
+      <h3 style={{ marginTop: 0 }}>Paleta</h3>
       {COMPONENTES.map((comp) => (
         <DraggableItem key={comp.tipo} tipo={comp.tipo} label={comp.label} />
       ))}
@@ -37,7 +30,7 @@ function DraggableItem({ tipo, label }: { tipo: string; label: string }) {
   return (
     <div
       ref={(node) => {
-        if (node) dragRef(node);
+        if (node) dragRef(node); // ✅ esta forma evita el error de tipo
       }}
       style={{
         padding: 8,

@@ -1,8 +1,8 @@
 // src/App.tsx
-import Diagramador from "./components/Diagramador/Diagramador";
+import AppRouter from "./routes/AppRouter";
 
 function App() {
-  return <Diagramador />;
+  return <AppRouter />;
 }
 
 export default App;
