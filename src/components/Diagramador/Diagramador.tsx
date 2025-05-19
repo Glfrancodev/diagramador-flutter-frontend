@@ -34,7 +34,12 @@ export default function Diagramador() {
   const navigate = useNavigate();
 
   const [zoom, setZoom] = useState(0.85);
-  const [selectedDevice, setSelectedDevice] = useState<DeviceKey>("phoneStandard");
+  const [_selectedDevice, _setSelectedDevice] = useState<DeviceKey>("phoneStandard");
+
+  const setSelectedDevice = (d: DeviceKey) => {
+    _setSelectedDevice(d);
+    deviceRef.current = d;
+  };
 
   const [tabs, setTabs] = useState<Tab[]>([
     { id: "tab1", name: "Pantalla 1", elementos: [] },
@@ -44,18 +49,16 @@ export default function Diagramador() {
   const [isSaving, setIsSaving] = useState(false);
   const [selectedElementId, setSelectedElementId] = useState<string | null>(null);
 
-  /* ------------------------------------------------------------------ */
-  /* -------------------- Persistencia / carga inicial ----------------- */
-  /* ------------------------------------------------------------------ */
   const tabsRef = useRef(tabs);
-  const deviceRef = useRef(selectedDevice);
+  const deviceRef = useRef<DeviceKey>("phoneStandard");
   useEffect(() => { tabsRef.current = tabs; }, [tabs]);
-  useEffect(() => { deviceRef.current = selectedDevice; }, [selectedDevice]);
+  useEffect(() => { deviceRef.current = _selectedDevice; }, [_selectedDevice]);
 
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!projectId) return;
+
     const fetchData = async () => {
       try {
         const { data } = await axiosInstance.get(`/proyectos/${projectId}`);
@@ -66,7 +69,9 @@ export default function Diagramador() {
             setTabs(parsed.pestañas);
             setSelectedTabId(parsed.pestañas[0].id);
           }
-          if (parsed.dispositivo) setSelectedDevice(parsed.dispositivo as DeviceKey);
+          if (parsed.dispositivo && parsed.dispositivo in DEVICES) {
+            setSelectedDevice(parsed.dispositivo as DeviceKey);
+          }
         }
       } catch (e) {
         console.error("Error al cargar proyecto", e);
@@ -99,16 +104,10 @@ export default function Diagramador() {
     }
   };
 
-  /* ------------------------------------------------------------------ */
-  /* ----------------------------- Zoom -------------------------------- */
-  /* ------------------------------------------------------------------ */
   const zoomIn = () => setZoom((z) => Math.min(z + 0.1, 2));
   const zoomOut = () => setZoom((z) => Math.max(z - 0.1, 0.5));
   const resetZoom = () => setZoom(0.85);
 
-  /* ------------------------------------------------------------------ */
-  /* ------------------------- Gestión de pestañas --------------------- */
-  /* ------------------------------------------------------------------ */
   const handleAddTab = () => {
     let index = tabs.length + 1;
     let newName = `Pantalla ${index}`;
@@ -144,9 +143,6 @@ export default function Diagramador() {
     }
   };
 
-  /* ------------------------------------------------------------------ */
-  /* ------------------------ CRUD de elementos ------------------------ */
-  /* ------------------------------------------------------------------ */
   const updateElementos = (
     tabId: string,
     updater: (prev: Elemento[]) => Elemento[]
@@ -160,7 +156,7 @@ export default function Diagramador() {
 
   const selectedTab = tabs.find((t) => t.id === selectedTabId);
   const selectedElement = selectedTab?.elementos.find((el) => el.id === selectedElementId) ?? null;
-  const device = DEVICES[selectedDevice];
+  const device = DEVICES[_selectedDevice];
 
   const updateElemento = (fn: (el: Elemento) => Elemento) => {
     if (!selectedElementId || !selectedTab) return;
@@ -193,13 +189,7 @@ export default function Diagramador() {
     setSelectedElementId(null);
   };
 
-  /* ------------------------------------------------------------------ */
-  /* ------------- Atajo Delete/Backspace (con selector abierto) ------- */
-  /* ------------------------------------------------------------------ */
   useEffect(() => {
-    /** Consideramos “escribiendo texto” si el foco está en INPUT,
-     *  TEXTAREA o en un nodo contentEditable; un SELECT no bloquea
-     *  la eliminación. */
     const isTextEditing = (el: Element | null) => {
       if (!el) return false;
       const tag = (el as HTMLElement).tagName;
@@ -219,13 +209,10 @@ export default function Diagramador() {
       }
     };
 
-    window.addEventListener("keydown", handleKeyDown, true); // fase captura
+    window.addEventListener("keydown", handleKeyDown, true);
     return () => window.removeEventListener("keydown", handleKeyDown, true);
   }, [selectedElementId, selectedTab]);
 
-  /* ------------------------------------------------------------------ */
-  /* ------------------------------ UI -------------------------------- */
-  /* ------------------------------------------------------------------ */
   return (
     <DndProvider backend={HTML5Backend}>
       {/* Barra superior */}
@@ -289,7 +276,7 @@ export default function Diagramador() {
           zoomIn={zoomIn}
           zoomOut={zoomOut}
           resetZoom={resetZoom}
-          selectedDevice={selectedDevice}
+          selectedDevice={_selectedDevice}
           onDeviceChange={setSelectedDevice}
         />
 

@@ -2,11 +2,14 @@
 import { useDrag } from 'react-dnd';
 
 const COMPONENTES = [
-  { tipo: 'Boton',    label: 'Botón' },
+  { tipo: 'Boton', label: 'Botón' },
   { tipo: 'Selector', label: 'Selector' },
   { tipo: 'Checkbox', label: 'Checkbox' },
   { tipo: 'Tabla', label: 'Tabla' },
+  { tipo: 'Link', label: 'Enlace' },
+  { tipo: 'Sidebar', label: 'Sidebar' },
 ];
+
 
 export default function SidebarPaleta() {
   return (

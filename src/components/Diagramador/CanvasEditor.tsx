@@ -42,6 +42,18 @@ const defaultProps = (tipo: string) => {
       fontSize: 14,
     };
   }
+  if (tipo === 'Link') {
+    return { texto: 'Visítanos', url: 'https://ejemplo.com', fontSize: 14, color: '#2563eb' };
+  }
+  if (tipo === 'Sidebar') {
+    return {
+      items: [
+        { texto: 'Inicio', tabId: 'tab1' },
+        { texto: 'Pantalla 2', tabId: 'tab2' },
+      ],
+      visible: true,
+    };
+  }
   return {};
 };
 
@@ -74,8 +86,8 @@ export default function CanvasEditor({
           tipo: item.tipo,
           x,
           y,
-          width: 120,
-          height: 40,
+          width: 140,
+          height: height - 40,
           props: defaultProps(item.tipo),
         };
 
@@ -108,6 +120,25 @@ export default function CanvasEditor({
     const Comp = REGISTRY[el.tipo];
     if (Comp) {
       const isTabla = el.tipo === 'Tabla';
+      if (el.tipo === 'Sidebar') {
+        const isVisible = el.props?.visible ?? true;
+
+        return (
+          <Comp
+            {...el.props}
+            zoom={zoom}
+            visible={isVisible}
+            onToggle={(nextVisible: boolean) => {
+              onChange(tabId, (prev) =>
+                prev.map((e) =>
+                  e.id === el.id ? { ...e, props: { ...e.props, visible: nextVisible } } : e
+                )
+              );
+            }}
+          />
+        );
+      }
+
       return (
         <Comp
           {...el.props}
@@ -168,34 +199,49 @@ export default function CanvasEditor({
           position: 'relative',
         }}
       >
-        {elementos.map((el) => (
-          <Rnd
-            key={el.id}
-            bounds="parent"
-            enableResizing
-            disableDragging={el.props?.locked === true}
-            size={{ width: el.width * zoom, height: el.height * zoom }}
-            position={{ x: el.x * zoom, y: el.y * zoom }}
-            dragCancel=".no-drag"
-            onDragStop={(_, d) => move(el.id, d.x, d.y)}
-            onResizeStop={(_, __, ref, ___, pos) =>
-              move(el.id, pos.x, pos.y, ref.offsetWidth, ref.offsetHeight)
-            }
-            onClick={() => onSelect?.(el.id)}
-            style={{
-              border:
-                el.id === selectedElementId
-                  ? '2px solid #2563eb'
-                  : '1px solid transparent',
-              borderRadius: 4,
-              boxSizing: 'border-box',
-              background: el.props?.locked ? '#f9fafb' : undefined,
-              cursor: el.props?.locked ? 'default' : 'move',
-            }}
-          >
-            {renderContenido(el)}
-          </Rnd>
-        ))}
+        {elementos.map((el) => {
+          const isSidebar = el.tipo === 'Sidebar';
+          const isVisible = el.props?.visible ?? true;
+          const widthActual = isSidebar
+            ? isVisible
+              ? el.width * zoom
+              : 32 * zoom
+            : el.width * zoom;
+          const heightActual = isSidebar
+            ? isVisible
+              ? el.height * zoom
+              : 32 * zoom
+            : el.height * zoom;
+
+          return (
+            <Rnd
+              key={el.id}
+              bounds="parent"
+              enableResizing
+              disableDragging={el.props?.locked === true}
+              size={{ width: widthActual, height: heightActual }}
+              position={{ x: el.x * zoom, y: el.y * zoom }}
+              dragCancel=".no-drag"
+              onDragStop={(_, d) => move(el.id, d.x, d.y)}
+              onResizeStop={(_, __, ref, ___, pos) =>
+                move(el.id, pos.x, pos.y, ref.offsetWidth, ref.offsetHeight)
+              }
+              onClick={() => onSelect?.(el.id)}
+              style={{
+                border:
+                  el.id === selectedElementId
+                    ? '2px solid #2563eb'
+                    : '1px solid transparent',
+                borderRadius: 4,
+                boxSizing: 'border-box',
+                background: el.props?.locked ? '#f9fafb' : undefined,
+                cursor: el.props?.locked ? 'default' : 'move',
+              }}
+            >
+              {renderContenido(el)}
+            </Rnd>
+          );
+        })}
       </div>
     </div>
   );

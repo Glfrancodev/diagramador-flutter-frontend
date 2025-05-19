@@ -231,6 +231,142 @@ export default function PropiedadesPanel({ elemento, onUpdate }: Props) {
       </div>
     );
   }
+  /* ------------------- LINK ------------------- */
+  if (elemento.tipo === 'Link') {
+    return (
+      <div style={{ padding: 10 }}>
+        <h4>Enlace</h4>
+
+        <label style={{ display: 'block', marginBottom: 6 }}>
+          Texto:
+          <input
+            type="text"
+            value={elemento.props?.texto || ''}
+            onChange={(e) => set({ texto: e.target.value })}
+            style={{ width: '100%', marginTop: 4 }}
+          />
+        </label>
+
+        <label style={{ display: 'block', marginBottom: 6 }}>
+          URL de destino:
+          <input
+            type="text"
+            value={elemento.props?.url || ''}
+            onChange={(e) => set({ url: e.target.value })}
+            style={{ width: '100%', marginTop: 4 }}
+          />
+        </label>
+
+        <label style={{ display: 'block', marginBottom: 6 }}>
+          Tamaño de texto (px):
+          <input
+            type="number"
+            min={8}
+            max={72}
+            value={elemento.props?.fontSize ?? 14}
+            onChange={(e) => set({ fontSize: Number(e.target.value) || 14 })}
+            style={{ width: '100%', marginTop: 4 }}
+          />
+        </label>
+
+        <label style={{ display: 'block', marginBottom: 6 }}>
+          Color:
+          <input
+            type="color"
+            value={elemento.props?.color || '#2563eb'}
+            onChange={(e) => set({ color: e.target.value })}
+            style={{ width: '100%', marginTop: 4 }}
+          />
+        </label>
+
+        {bloqueBase}
+      </div>
+    );
+  }
+  /* ------------------- SIDEBAR ------------------- */
+  if (elemento.tipo === 'Sidebar') {
+    const lista = elemento.props?.items || [];
+
+    const updateItem = (i: number, key: 'texto' | 'tabId', value: string) => {
+      const copy = [...lista];
+      copy[i] = { ...copy[i], [key]: value };
+      set({ items: copy });
+    };
+
+    const removeItem = (i: number) => {
+      const copy = [...lista];
+      copy.splice(i, 1);
+      set({ items: copy });
+    };
+
+    const addItem = () => {
+      const copy = [...lista, { texto: 'Nuevo', tabId: 'tab1' }];
+      set({ items: copy });
+    };
+
+    return (
+      <div style={{ padding: 10 }}>
+        <h4>Sidebar</h4>
+        {lista.map((item: any, i: number) => (
+          <div key={i} style={{ marginBottom: 8 }}>
+            <input
+              type="text"
+              value={item.texto}
+              onChange={(e) => updateItem(i, 'texto', e.target.value)}
+              placeholder="Texto"
+              style={{ width: '100%', marginBottom: 4 }}
+            />
+            <input
+              type="text"
+              value={item.tabId}
+              onChange={(e) => updateItem(i, 'tabId', e.target.value)}
+              placeholder="ID de pestaña"
+              style={{ width: '100%', marginBottom: 4 }}
+            />
+            <button
+              onClick={() => removeItem(i)}
+              style={{
+                width: '100%',
+                background: '#dc2626',
+                color: '#fff',
+                border: 'none',
+                borderRadius: 4,
+                padding: 4,
+              }}
+            >
+              Eliminar
+            </button>
+          </div>
+        ))}
+
+        <button
+          onClick={addItem}
+          style={{
+            width: '100%',
+            background: '#2563eb',
+            color: '#fff',
+            border: 'none',
+            borderRadius: 4,
+            padding: 6,
+          }}
+        >
+          + Añadir Item
+        </button>
+
+        <div style={{ marginTop: 10 }}>
+          <label>
+            Visible por defecto:
+            <input
+              type="checkbox"
+              checked={elemento.props?.visible ?? true}
+              onChange={(e) => set({ visible: e.target.checked })}
+              style={{ marginLeft: 8 }}
+            />
+          </label>
+        </div>
+      </div>
+    );
+  }
 
   return <div style={{ padding: 10 }}>Sin propiedades editables</div>;
 }
