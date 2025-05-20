@@ -327,7 +327,7 @@ export default function Diagramador() {
             </div>
           </div>
 
-          {/* Panel de propiedades */}
+          {/* Panel de propiedades con scroll */}
           <div
             style={{
               width: 280,
@@ -335,15 +335,20 @@ export default function Diagramador() {
               maxWidth: 280,
               backgroundColor: "#fafafa",
               borderLeft: "1px solid #ccc",
-              padding: 10,
               boxSizing: "border-box",
+              display: "flex",
+              flexDirection: "column",
+              overflow: "hidden",
             }}
           >
-            <PropiedadesPanel
-              elemento={selectedElement}
-              onUpdate={updateElemento}
-            />
+            <div style={{ flex: 1, overflowY: "auto", padding: 10 }}>
+              <PropiedadesPanel
+                elemento={selectedElement}
+                onUpdate={updateElemento}
+              />
+            </div>
           </div>
+
         </div>
       </div>
     </DndProvider>

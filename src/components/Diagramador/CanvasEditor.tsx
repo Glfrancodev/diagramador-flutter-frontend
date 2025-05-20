@@ -29,7 +29,16 @@ type Props = {
 
 const defaultProps = (tipo: string) => {
   if (tipo === 'Selector') return { options: ['Opción 1', 'Opción 2'], fontSize: 14 };
-  if (tipo === 'Boton') return { texto: 'Botón', color: '#007bff', fontSize: 14 };
+  if (tipo === 'Boton') {
+    return {
+      texto: 'Botón',
+      color: '#007bff',
+      textColor: '#ffffff',
+      borderRadius: 4,
+      fontSize: 14,
+    };
+  }
+
   if (tipo === 'Checkbox') return { texto: 'Opción', fontSize: 14 };
   if (tipo === 'Tabla') {
     return {
@@ -47,9 +56,10 @@ const defaultProps = (tipo: string) => {
   }
   if (tipo === 'Sidebar') {
     return {
+      titulo: 'Menú',
       items: [
-        { texto: 'Inicio', tabId: 'tab1' },
-        { texto: 'Pantalla 2', tabId: 'tab2' },
+        { texto: 'Inicio', nombrePestana: 'Pantalla 1' },
+        { texto: 'Pantalla 2', nombrePestana: 'Pantalla 2' },
       ],
       visible: true,
     };

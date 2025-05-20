@@ -95,11 +95,33 @@ export default function PropiedadesPanel({ elemento, onUpdate }: Props) {
         </label>
 
         <label style={{ display: 'block', marginBottom: 6 }}>
-          Color:
+          Color de fondo:
           <input
             type="color"
             value={elemento.props?.color || '#007bff'}
             onChange={(e) => set({ color: e.target.value })}
+            style={{ width: '100%', marginTop: 4 }}
+          />
+        </label>
+
+        <label style={{ display: 'block', marginBottom: 6 }}>
+          Color del texto:
+          <input
+            type="color"
+            value={elemento.props?.textColor || '#ffffff'}
+            onChange={(e) => set({ textColor: e.target.value })}
+            style={{ width: '100%', marginTop: 4 }}
+          />
+        </label>
+
+        <label style={{ display: 'block', marginBottom: 6 }}>
+          Radio de borde:
+          <input
+            type="number"
+            min={0}
+            max={50}
+            value={elemento.props?.borderRadius ?? 4}
+            onChange={(e) => set({ borderRadius: Number(e.target.value) || 0 })}
             style={{ width: '100%', marginTop: 4 }}
           />
         </label>
@@ -287,7 +309,7 @@ export default function PropiedadesPanel({ elemento, onUpdate }: Props) {
   if (elemento.tipo === 'Sidebar') {
     const lista = elemento.props?.items || [];
 
-    const updateItem = (i: number, key: 'texto' | 'tabId', value: string) => {
+    const updateItem = (i: number, key: 'texto' | 'nombrePestana', value: string) => {
       const copy = [...lista];
       copy[i] = { ...copy[i], [key]: value };
       set({ items: copy });
@@ -300,29 +322,46 @@ export default function PropiedadesPanel({ elemento, onUpdate }: Props) {
     };
 
     const addItem = () => {
-      const copy = [...lista, { texto: 'Nuevo', tabId: 'tab1' }];
+      const copy = [...lista, { texto: 'Nuevo', nombrePestana: 'Pantalla 1' }];
       set({ items: copy });
     };
 
     return (
-      <div style={{ padding: 10 }}>
+      <div style={{ padding: 10, maxHeight: '100%', overflowY: 'auto' }}>
         <h4>Sidebar</h4>
+
+        <label style={{ display: 'block', marginBottom: 6 }}>
+          Título del menú:
+          <input
+            type="text"
+            value={elemento.props?.titulo || 'Menú'}
+            onChange={(e) => set({ titulo: e.target.value })}
+            style={{ width: '100%', marginTop: 4 }}
+          />
+        </label>
+
         {lista.map((item: any, i: number) => (
-          <div key={i} style={{ marginBottom: 8 }}>
-            <input
-              type="text"
-              value={item.texto}
-              onChange={(e) => updateItem(i, 'texto', e.target.value)}
-              placeholder="Texto"
-              style={{ width: '100%', marginBottom: 4 }}
-            />
-            <input
-              type="text"
-              value={item.tabId}
-              onChange={(e) => updateItem(i, 'tabId', e.target.value)}
-              placeholder="ID de pestaña"
-              style={{ width: '100%', marginBottom: 4 }}
-            />
+          <div key={i} style={{ marginBottom: 12 }}>
+            <label style={{ display: 'block', marginBottom: 4 }}>
+              Texto del ítem:
+              <input
+                type="text"
+                value={item.texto}
+                onChange={(e) => updateItem(i, 'texto', e.target.value)}
+                style={{ width: '100%', marginTop: 4 }}
+              />
+            </label>
+
+            <label style={{ display: 'block', marginBottom: 4 }}>
+              Nombre de pestaña destino:
+              <input
+                type="text"
+                value={item.nombrePestana}
+                onChange={(e) => updateItem(i, 'nombrePestana', e.target.value)}
+                style={{ width: '100%', marginTop: 4 }}
+              />
+            </label>
+
             <button
               onClick={() => removeItem(i)}
               style={{
@@ -331,7 +370,8 @@ export default function PropiedadesPanel({ elemento, onUpdate }: Props) {
                 color: '#fff',
                 border: 'none',
                 borderRadius: 4,
-                padding: 4,
+                padding: 6,
+                marginTop: 4,
               }}
             >
               Eliminar
@@ -348,6 +388,7 @@ export default function PropiedadesPanel({ elemento, onUpdate }: Props) {
             border: 'none',
             borderRadius: 4,
             padding: 6,
+            marginBottom: 8,
           }}
         >
           + Añadir Item
@@ -364,9 +405,13 @@ export default function PropiedadesPanel({ elemento, onUpdate }: Props) {
             />
           </label>
         </div>
+
+        {bloqueBase}
       </div>
     );
   }
+
+
 
   return <div style={{ padding: 10 }}>Sin propiedades editables</div>;
 }

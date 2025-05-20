@@ -3,6 +3,8 @@ import React from "react";
 type Props = {
   texto?: string;
   color?: string;
+  textColor?: string;
+  borderRadius?: number;
   fontSize?: number;
   zoom: number;
 };
@@ -10,28 +12,29 @@ type Props = {
 const BotonComp: React.FC<Props> = ({
   texto = "Botón",
   color = "#007bff",
+  textColor = "#ffffff",
+  borderRadius = 4,
   fontSize = 14,
   zoom,
 }) => (
-<button
-  className="no-drag"
-  style={{
-    width: "100%",
-    height: "100%",
-    border: "none",
-    borderRadius: 4,
-    background: color,
-    color: "#fff",
-    fontSize: fontSize * zoom,
-    cursor: "pointer",
-    overflow: "hidden",        // ✅ clave
-    whiteSpace: "nowrap",      // ✅ evita saltos de línea
-    textOverflow: "ellipsis",  // ✅ muestra "..." si se desborda
-  }}
->
-  {texto}
-</button>
-
+  <button
+    className="no-drag"
+    style={{
+      width: "100%",
+      height: "100%",
+      border: "none",
+      borderRadius: borderRadius,
+      background: color,
+      color: textColor,
+      fontSize: fontSize * zoom,
+      cursor: "pointer",
+      overflow: "hidden",
+      whiteSpace: "nowrap",
+      textOverflow: "ellipsis",
+    }}
+  >
+    {texto}
+  </button>
 );
 
 export default BotonComp;

@@ -1,7 +1,7 @@
 import React from 'react';
 
 type Props = {
-  items?: { texto: string; tabId: string }[];
+  items?: { texto: string; nombrePestana: string }[]; // nombre visible de la pestaña
   visible: boolean;
   zoom: number;
   onToggle: (next: boolean) => void;
@@ -87,7 +87,7 @@ const SidebarComp: React.FC<Props> = ({ items = [], visible, zoom, onToggle }) =
       {items.map((item, i) => (
         <a
           key={i}
-          href={`#${item.tabId}`}
+          href={`#${item.nombrePestana}`} // referenciamos por nombre
           style={{
             display: 'block',
             padding: '6px 8px',
