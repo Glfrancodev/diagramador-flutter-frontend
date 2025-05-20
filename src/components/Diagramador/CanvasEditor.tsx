@@ -91,15 +91,16 @@ export default function CanvasEditor({
         const x = (offset.x - rect.left) / zoom;
         const y = (offset.y - rect.top) / zoom;
 
-        const nuevo: Elemento = {
-          id: crypto.randomUUID(),
-          tipo: item.tipo,
-          x,
-          y,
-          width: 140,
-          height: height - 40,
-          props: defaultProps(item.tipo),
-        };
+      const nuevo: Elemento = {
+        id: crypto.randomUUID(),
+        tipo: item.tipo,
+        x,
+        y,
+        width: 140,
+        height: item.tipo === 'Sidebar' ? height - 40 : 50, // ✅ altura lógica por defecto
+        props: defaultProps(item.tipo),
+      };
+
 
         onChange(tabId, (prev) => [...prev, nuevo]);
       },
