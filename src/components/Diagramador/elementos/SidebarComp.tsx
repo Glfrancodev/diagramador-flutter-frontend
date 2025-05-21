@@ -1,13 +1,20 @@
 import React from 'react';
 
 type Props = {
+  titulo?: string; // ✅ agregado
   items?: { texto: string; nombrePestana: string }[]; // nombre visible de la pestaña
   visible: boolean;
   zoom: number;
   onToggle: (next: boolean) => void;
 };
 
-const SidebarComp: React.FC<Props> = ({ items = [], visible, zoom, onToggle }) => {
+const SidebarComp: React.FC<Props> = ({
+  titulo = 'Menú', // ✅ destructuración con valor por defecto
+  items = [],
+  visible,
+  zoom,
+  onToggle
+}) => {
   if (!visible) {
     return (
       <div
@@ -65,7 +72,7 @@ const SidebarComp: React.FC<Props> = ({ items = [], visible, zoom, onToggle }) =
           alignItems: 'center',
         }}
       >
-        <span>Menú</span>
+        <span>{titulo}</span>
         <button
           onClick={() => onToggle(false)}
           style={{
@@ -87,7 +94,7 @@ const SidebarComp: React.FC<Props> = ({ items = [], visible, zoom, onToggle }) =
       {items.map((item, i) => (
         <a
           key={i}
-          href={`#${item.nombrePestana}`} // referenciamos por nombre
+          href={`#${item.nombrePestana}`}
           style={{
             display: 'block',
             padding: '6px 8px',

@@ -12,9 +12,9 @@ export const DEVICES = {
     height: 896,
   },
   tablet: {
-    name: "Tablet",
-    width: 768,
-    height: 1024,
+    name: "Tab s6 lite",
+    width: 800,
+    height: 1335,
   },
 };
 

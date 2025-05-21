@@ -2,6 +2,9 @@
 import { useDrag } from 'react-dnd';
 
 const COMPONENTES = [
+  { tipo: "Label", label: "Etiqueta" },        // NUEVO
+  { tipo: "InputBox", label: "Campo de texto" }, // NUEVO
+  { tipo: "InputFecha", label: "Fecha" }, // ✅ nuevo
   { tipo: 'Boton', label: 'Botón' },
   { tipo: 'Selector', label: 'Selector' },
   { tipo: 'Checkbox', label: 'Checkbox' },

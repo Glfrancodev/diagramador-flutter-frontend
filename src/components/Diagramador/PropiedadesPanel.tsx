@@ -410,6 +410,112 @@ export default function PropiedadesPanel({ elemento, onUpdate }: Props) {
       </div>
     );
   }
+/* ------------------- LABEL ------------------- */
+if (elemento.tipo === 'Label') {
+  return (
+    <div style={{ padding: 10 }}>
+      <h4>Etiqueta</h4>
+
+      <label style={{ display: 'block', marginBottom: 6 }}>
+        Texto:
+        <input
+          type="text"
+          value={elemento.props?.texto || ''}
+          onChange={(e) => set({ texto: e.target.value })}
+          style={{ width: '100%', marginTop: 4 }}
+        />
+      </label>
+
+      <label style={{ display: 'block', marginBottom: 6 }}>
+        Tamaño de texto (px):
+        <input
+          type="number"
+          min={8}
+          max={72}
+          value={elemento.props?.fontSize ?? 14}
+          onChange={(e) => set({ fontSize: Number(e.target.value) || 14 })}
+          style={{ width: '100%', marginTop: 4 }}
+        />
+      </label>
+
+      <label style={{ display: 'block', marginBottom: 6 }}>
+        Color del texto:
+        <input
+          type="color"
+          value={elemento.props?.color || '#000000'}
+          onChange={(e) => set({ color: e.target.value })}
+          style={{ width: '100%', marginTop: 4 }}
+        />
+      </label>
+
+      <label style={{ display: 'block', marginBottom: 6 }}>
+        Negrita:
+        <input
+          type="checkbox"
+          checked={elemento.props?.bold || false}
+          onChange={(e) => set({ bold: e.target.checked })}
+          style={{ marginLeft: 8 }}
+        />
+      </label>
+
+      {bloqueBase}
+    </div>
+  );
+}
+/* ------------------- INPUTBOX ------------------- */
+if (elemento.tipo === 'InputBox') {
+  return (
+    <div style={{ padding: 10 }}>
+      <h4>Campo de texto</h4>
+
+      <label style={{ display: 'block', marginBottom: 6 }}>
+        Placeholder:
+        <input
+          type="text"
+          value={elemento.props?.placeholder || ''}
+          onChange={(e) => set({ placeholder: e.target.value })}
+          style={{ width: '100%', marginTop: 4 }}
+        />
+      </label>
+
+      <label style={{ display: 'block', marginBottom: 6 }}>
+        Tamaño de texto (px):
+        <input
+          type="number"
+          min={8}
+          max={72}
+          value={elemento.props?.fontSize ?? 14}
+          onChange={(e) => set({ fontSize: Number(e.target.value) || 14 })}
+          style={{ width: '100%', marginTop: 4 }}
+        />
+      </label>
+
+      {bloqueBase}
+    </div>
+  );
+}
+/* ------------------- INPUTFECHA ------------------- */
+if (elemento.tipo === 'InputFecha') {
+  return (
+    <div style={{ padding: 10 }}>
+      <h4>Campo de fecha</h4>
+
+      <label style={{ display: 'block', marginBottom: 6 }}>
+        Tamaño de texto (px):
+        <input
+          type="number"
+          min={8}
+          max={72}
+          value={elemento.props?.fontSize ?? 14}
+          onChange={(e) => set({ fontSize: Number(e.target.value) || 14 })}
+          style={{ width: '100%', marginTop: 4 }}
+        />
+      </label>
+
+      {bloqueBase}
+    </div>
+  );
+}
 
 
 

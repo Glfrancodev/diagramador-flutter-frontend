@@ -28,6 +28,20 @@ type Props = {
 };
 
 const defaultProps = (tipo: string) => {
+    if (tipo === 'Label') {
+    return {
+      texto: 'Etiqueta',
+      fontSize: 14,
+      color: '#000000',
+      bold: false,
+    };
+  }
+  if (tipo === 'InputBox') {
+    return {
+      placeholder: 'Ingrese texto...',
+      fontSize: 14,
+    };
+  }
   if (tipo === 'Selector') return { options: ['Opción 1', 'Opción 2'], fontSize: 14 };
   if (tipo === 'Boton') {
     return {
@@ -63,6 +77,11 @@ const defaultProps = (tipo: string) => {
       ],
       visible: true,
     };
+  }
+  if (tipo === 'InputFecha') {
+  return {
+    fontSize: 14,
+  };
   }
   return {};
 };
@@ -137,6 +156,7 @@ export default function CanvasEditor({
         return (
           <Comp
             {...el.props}
+            titulo={el.props?.titulo || 'Menú'} // ✅ NUEVO
             zoom={zoom}
             visible={isVisible}
             onToggle={(nextVisible: boolean) => {
@@ -147,6 +167,7 @@ export default function CanvasEditor({
               );
             }}
           />
+
         );
       }
 
