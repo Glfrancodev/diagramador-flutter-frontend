@@ -104,47 +104,60 @@ export default function CanvasEditor({
       drop: (item: { tipo: string }, monitor) => {
         const offset = monitor.getClientOffset();
         if (!offset) return;
+
         const canvas = document.getElementById(canvasId);
         if (!canvas) return;
+
         const rect = canvas.getBoundingClientRect();
-        const x = (offset.x - rect.left) / zoom;
-        const y = (offset.y - rect.top) / zoom;
+        const xAbs = (offset.x - rect.left) / zoom;
+        const yAbs = (offset.y - rect.top) / zoom;
 
-      const nuevo: Elemento = {
-        id: crypto.randomUUID(),
-        tipo: item.tipo,
-        x,
-        y,
-        width: 140,
-        height: item.tipo === 'Sidebar' ? height - 40 : 50, // ✅ altura lógica por defecto
-        props: defaultProps(item.tipo),
-      };
+        // Default size en píxeles
+        const defaultWidthPx = 140;
+        const defaultHeightPx = item.tipo === 'Sidebar' ? height - 40 : 50;
 
+        // Conversión a proporciones relativas
+        const x = xAbs / width;
+        const y = yAbs / height;
+        const widthRel = defaultWidthPx / width;
+        const heightRel = defaultHeightPx / height;
+
+        const nuevo: Elemento = {
+          id: crypto.randomUUID(),
+          tipo: item.tipo,
+          x,
+          y,
+          width: widthRel,
+          height: heightRel,
+          props: defaultProps(item.tipo),
+        };
 
         onChange(tabId, (prev) => [...prev, nuevo]);
       },
     }),
-    [tabId, zoom]
+    [tabId, zoom, width, height] // ¡IMPORTANTE! Agregar width y height como dependencias
   );
+
 
   const setDropRef = (n: HTMLDivElement | null) => {
     if (n) dropRef(n);
   };
 
-  const move = (id: string, x: number, y: number, w?: number, h?: number) =>
-    onChange(tabId, (p) =>
-      p.map((e) =>
-        e.id === id
-          ? {
-              ...e,
-              x: x / zoom,
-              y: y / zoom,
-              width: w !== undefined ? w / zoom : e.width,
-              height: h !== undefined ? h / zoom : e.height,
-            }
-          : e
-      )
-    );
+const move = (id: string, x: number, y: number, w?: number, h?: number) =>
+  onChange(tabId, (p) =>
+    p.map((e) =>
+      e.id === id
+        ? {
+            ...e,
+            x: x / (width * zoom),
+            y: y / (height * zoom),
+            width: w !== undefined ? w / (width * zoom) : e.width,
+            height: h !== undefined ? h / (height * zoom) : e.height,
+          }
+        : e
+    )
+  );
+
 
   const renderContenido = (el: Elemento) => {
     const Comp = REGISTRY[el.tipo];
@@ -232,18 +245,6 @@ export default function CanvasEditor({
         }}
       >
         {elementos.map((el) => {
-          const isSidebar = el.tipo === 'Sidebar';
-          const isVisible = el.props?.visible ?? true;
-          const widthActual = isSidebar
-            ? isVisible
-              ? el.width * zoom
-              : 32 * zoom
-            : el.width * zoom;
-          const heightActual = isSidebar
-            ? isVisible
-              ? el.height * zoom
-              : 32 * zoom
-            : el.height * zoom;
 
           return (
             <Rnd
@@ -251,8 +252,14 @@ export default function CanvasEditor({
               bounds="parent"
               enableResizing
               disableDragging={el.props?.locked === true}
-              size={{ width: widthActual, height: heightActual }}
-              position={{ x: el.x * zoom, y: el.y * zoom }}
+              size={{
+                width: el.width * width * zoom,
+                height: el.height * height * zoom,
+              }}
+              position={{
+                x: el.x * width * zoom,
+                y: el.y * height * zoom,
+              }}
               dragCancel=".no-drag"
               onDragStop={(_, d) => move(el.id, d.x, d.y)}
               onResizeStop={(_, __, ref, ___, pos) =>
@@ -273,6 +280,7 @@ export default function CanvasEditor({
               {renderContenido(el)}
             </Rnd>
           );
+
         })}
       </div>
     </div>

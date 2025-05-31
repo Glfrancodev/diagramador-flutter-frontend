@@ -69,9 +69,6 @@ export default function Diagramador() {
             setTabs(parsed.pestañas);
             setSelectedTabId(parsed.pestañas[0].id);
           }
-          if (parsed.dispositivo && parsed.dispositivo in DEVICES) {
-            setSelectedDevice(parsed.dispositivo as DeviceKey);
-          }
         }
       } catch (e) {
         console.error("Error al cargar proyecto", e);
@@ -93,8 +90,7 @@ export default function Diagramador() {
       setIsSaving(true);
       await axiosInstance.put(`/proyectos/${projectId}`, {
         contenido: JSON.stringify({
-          pestañas: tabsRef.current,
-          dispositivo: deviceRef.current,
+          pestañas: tabsRef.current
         }),
       });
     } catch (e) {
