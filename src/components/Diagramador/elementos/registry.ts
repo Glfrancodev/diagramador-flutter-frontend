@@ -11,6 +11,8 @@ import InputFechaComp from './InputFechaComp';
 import ImagenComp from './ImagenComp';
 import VideoComp from './VideoComp';
 import AudioComp from './AudioComp';
+import BottomNavbarComp from './BottomNavbarComp';
+
 
 export const REGISTRY: Record<string, React.FC<any>> = {
   Selector: SelectorComp,
@@ -25,4 +27,5 @@ export const REGISTRY: Record<string, React.FC<any>> = {
   Imagen    : ImagenComp,
   Video: VideoComp,
   Audio: AudioComp,
+  BottomNavbar: BottomNavbarComp,
 };

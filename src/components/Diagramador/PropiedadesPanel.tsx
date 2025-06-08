@@ -1,9 +1,10 @@
 // src/components/Diagramador/PropiedadesPanel.tsx
 import { useState } from 'react';
 import type { Elemento } from './CanvasEditor';
-import ModalSeleccionVideo from './ModalSeleccionVideo';
-import ModalSeleccionImagen from './ModalSeleccionImagen';
-import ModalSeleccionAudio from './ModalSeleccionAudio';
+import ModalSeleccionVideo from './modales/ModalSeleccionVideo';
+import ModalSeleccionImagen from './modales/ModalSeleccionImagen';
+import ModalSeleccionAudio from './modales/ModalSeleccionAudio';
+import ModalSeleccionIcono from './modales/ModalSeleccionIcono'; // asegúrate de importar correctamente
 
 
 type Props = {
@@ -900,6 +901,164 @@ if (elemento.tipo === 'Audio') {
     </div>
   );
 }
+/* ------------------- BOTTOM NAVBAR ------------------- */
+if (elemento.tipo === 'BottomNavbar') {
+  const lista = elemento.props?.items || [];
+
+  const [indiceIconoActivo, setIndiceIconoActivo] = useState<number | null>(null);
+
+  // Función para actualizar los items
+  const updateItem = (
+    i: number,
+    key: 'label' | 'nombrePestana' | 'icono',
+    value: string
+  ) => {
+    const copy = [...lista];
+    copy[i] = { ...copy[i], [key]: value };
+    set({ items: copy });
+  };
+
+  // Función para eliminar un item
+  const removeItem = (i: number) => {
+    const copy = [...lista];
+    copy.splice(i, 1);
+    set({ items: copy });
+  };
+
+  // Función para agregar un nuevo item
+  const addItem = () => {
+    const copy = [
+      ...lista,
+      {
+        label: 'Nueva pestaña',
+        nombrePestana: 'Pantalla 1',
+        icono: '',
+      },
+    ];
+    set({ items: copy });
+  };
+
+  return (
+    <div style={{ padding: 10 }}>
+      <h4>Barra inferior</h4>
+
+      {/* Tamaño de texto */}
+      <label style={{ display: 'block', margin: '12px 0 6px 0' }}>
+        Tamaño de texto (px):
+        <input
+          type="number"
+          min={8}
+          max={72}
+          value={relToPx(elemento.props?.fontSize ?? 0.02)} // Muestra en px reales
+          onChange={(e) => set({ fontSize: pxToRel(Number(e.target.value) || 14) })}
+          style={{ width: '100%', marginTop: 4 }}
+        />
+      </label>
+
+      {/* Tamaño de íconos */}
+      <label style={{ display: 'block', margin: '12px 0 6px 0' }}>
+        Tamaño de íconos (px):
+        <input
+          type="number"
+          min={8}
+          max={72}
+          value={relToPx(elemento.props?.iconSize ?? 0.02)} // Muestra en px reales
+          onChange={(e) => set({ iconSize: pxToRel(Number(e.target.value) || 14) })}
+          style={{ width: '100%', marginTop: 4 }}
+        />
+      </label>
+
+      {/* Pestañas */}
+      <label style={{ display: 'block', margin: '12px 0 6px 0' }}>Pestañas:</label>
+
+      {lista.map((item: any, i: number) => (
+        <div key={i} style={{ marginBottom: 12 }}>
+          <label style={{ display: 'block', marginBottom: 4 }}>
+            Texto del ítem:
+            <input
+              type="text"
+              value={item.label}
+              onChange={(e) => updateItem(i, 'label', e.target.value)}
+              style={{ width: '100%', marginTop: 4 }}
+            />
+          </label>
+
+          <label style={{ display: 'block', marginBottom: 4 }}>
+            Nombre de pestaña destino:
+            <input
+              type="text"
+              value={item.nombrePestana}
+              onChange={(e) => updateItem(i, 'nombrePestana', e.target.value)}
+              style={{ width: '100%', marginTop: 4 }}
+            />
+          </label>
+
+          <label style={{ display: 'block', marginBottom: 4 }}>
+            Ícono:
+          </label>
+          <button
+            onClick={() => setIndiceIconoActivo(i)}
+            style={{
+              width: '100%',
+              padding: 6,
+              background: '#e5e7eb',
+              border: '1px solid #ccc',
+              borderRadius: 4,
+              cursor: 'pointer',
+              marginBottom: 4,
+            }}
+          >
+            {item.icono ? `Icono: ${item.icono}` : 'Escoger ícono'}
+          </button>
+
+          <button
+            onClick={() => removeItem(i)}
+            style={{
+              width: '100%',
+              background: '#dc2626',
+              color: 'white',
+              border: 'none',
+              borderRadius: 4,
+              padding: 6,
+              marginTop: 4,
+            }}
+          >
+            Eliminar
+          </button>
+        </div>
+      ))}
+
+      <button
+        onClick={addItem}
+        style={{
+          width: '100%',
+          background: '#2563eb',
+          color: '#fff',
+          border: 'none',
+          borderRadius: 4,
+          padding: 6,
+          marginTop: 4,
+        }}
+      >
+        + Añadir pestaña
+      </button>
+
+      {bloqueBase}
+
+      {/* Modal de selección de ícono */}
+      {indiceIconoActivo !== null && (
+        <ModalSeleccionIcono
+          onSelect={(iconName) => {
+            updateItem(indiceIconoActivo, 'icono', iconName);
+            setIndiceIconoActivo(null);
+          }}
+          onClose={() => setIndiceIconoActivo(null)}
+        />
+      )}
+    </div>
+  );
+}
+
 
 
   return <div style={{ padding: 10 }}>Sin propiedades editables</div>;

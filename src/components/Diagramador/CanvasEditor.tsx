@@ -104,6 +104,25 @@ if (tipo === 'Tabla') {
     fontSize: px(14),
   };
   }
+
+if (tipo === 'BottomNavbar') {
+  return {
+    items: [
+      { label: 'Inicio', nombrePestana: 'Pantalla 1' },
+      { label: 'Mensajes', nombrePestana: 'Pantalla 2' },
+      { label: 'Perfil', nombrePestana: 'Pantalla 3' },
+    ],
+    selectedIndex: 0,
+    fontSize: px(14),
+    colorActivo: '#2563eb',
+    colorInactivo: '#666666',
+    fondo: '#ffffff',
+    borderRadius: 6,
+  };
+}
+
+
+
   return {};
 };
 

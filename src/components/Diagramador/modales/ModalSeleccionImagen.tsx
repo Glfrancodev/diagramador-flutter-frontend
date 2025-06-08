@@ -1,6 +1,6 @@
 // src/components/Diagramador/ModalSeleccionImagen.tsx
 import { useEffect, useState } from 'react';
-import axiosInstance from '../../services/axiosInstance';
+import axiosInstance from '../../../services/axiosInstance';
 
 export type Archivo = {
   idArchivo: string;

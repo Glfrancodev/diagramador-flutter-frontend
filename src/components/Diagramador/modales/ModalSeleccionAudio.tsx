@@ -1,5 +1,6 @@
+// src/components/Diagramador/ModalSeleccionAudio.tsx
 import { useEffect, useState } from 'react';
-import axiosInstance from '../../services/axiosInstance';
+import axiosInstance from '../../../services/axiosInstance';
 
 export type Archivo = {
   idArchivo: string;
@@ -13,7 +14,7 @@ type Props = {
   onSelect: (archivo: Archivo) => void;
 };
 
-export default function ModalSeleccionVideo({ proyectoId, onClose, onSelect }: Props) {
+export default function ModalSeleccionAudio({ proyectoId, onClose, onSelect }: Props) {
   const [archivos, setArchivos] = useState<Archivo[]>([]);
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -21,7 +22,7 @@ export default function ModalSeleccionVideo({ proyectoId, onClose, onSelect }: P
   useEffect(() => {
     const fetchArchivos = async () => {
       try {
-        const { data } = await axiosInstance.get(`/archivos/${proyectoId}?tipo=video`);
+        const { data } = await axiosInstance.get(`/archivos/${proyectoId}?tipo=audio`);
         setArchivos(data);
         setError(null);
       } catch (err: any) {
@@ -41,15 +42,15 @@ export default function ModalSeleccionVideo({ proyectoId, onClose, onSelect }: P
     try {
       const formData = new FormData();
       formData.append('archivo', file);
-      formData.append('tipo', 'video');
+      formData.append('tipo', 'audio');
       formData.append('idProyecto', proyectoId);
 
       await axiosInstance.post('/archivos', formData);
-      const { data } = await axiosInstance.get(`/archivos/${proyectoId}?tipo=video`);
+      const { data } = await axiosInstance.get(`/archivos/${proyectoId}?tipo=audio`);
       setArchivos(data);
     } catch (err) {
       console.error('Error al subir archivo:', err);
-      alert('No se pudo subir el video');
+      alert('No se pudo subir el audio');
     }
   };
 
@@ -81,14 +82,14 @@ export default function ModalSeleccionVideo({ proyectoId, onClose, onSelect }: P
       }}
     >
       <div style={{ background: '#fff', padding: 20, maxWidth: 600, width: '90%', borderRadius: 8 }}>
-        <h3>Seleccionar video</h3>
+        <h3>Seleccionar audio</h3>
 
         {cargando && <p>Cargando...</p>}
         {error && <p style={{ color: 'red' }}>{error}</p>}
 
         <div style={{ maxHeight: 300, overflowY: 'auto', marginBottom: 12 }}>
           {archivos.length === 0 && !cargando && (
-            <p style={{ color: '#555', fontStyle: 'italic' }}>No hay videos en el proyecto</p>
+            <p style={{ color: '#555', fontStyle: 'italic' }}>No hay audios en el proyecto</p>
           )}
 
           {archivos.map((archivo) => (
@@ -153,10 +154,10 @@ export default function ModalSeleccionVideo({ proyectoId, onClose, onSelect }: P
               cursor: 'pointer',
             }}
           >
-            Subir nuevo video
+            Subir nuevo audio
             <input
               type="file"
-              accept="video/*"
+              accept="audio/*"
               onChange={handleSubir}
               style={{ display: 'none' }}
             />
