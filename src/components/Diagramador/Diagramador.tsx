@@ -341,6 +341,7 @@ export default function Diagramador() {
               <PropiedadesPanel
                 elemento={selectedElement}
                 onUpdate={updateElemento}
+                canvasHeight={device.height} // ✅ agregar
               />
             </div>
           </div>

@@ -1,3 +1,4 @@
+// src/components/Diagramador/elementos/BotonComp.tsx
 import React from "react";
 
 type Props = {
@@ -5,8 +6,9 @@ type Props = {
   color?: string;
   textColor?: string;
   borderRadius?: number;
-  fontSize?: number;
+  fontSize?: number; // ⚠️ ahora es proporcional
   zoom: number;
+  canvasHeight: number; // ✅ nuevo
 };
 
 const BotonComp: React.FC<Props> = ({
@@ -14,8 +16,9 @@ const BotonComp: React.FC<Props> = ({
   color = "#007bff",
   textColor = "#ffffff",
   borderRadius = 4,
-  fontSize = 14,
+  fontSize = 0.02, // valor proporcional
   zoom,
+  canvasHeight,
 }) => (
   <button
     className="no-drag"
@@ -26,7 +29,7 @@ const BotonComp: React.FC<Props> = ({
       borderRadius: borderRadius,
       background: color,
       color: textColor,
-      fontSize: fontSize * zoom,
+      fontSize: fontSize * canvasHeight * zoom, // ✅ ajustado proporcionalmente
       cursor: "pointer",
       overflow: "hidden",
       whiteSpace: "nowrap",

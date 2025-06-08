@@ -5,9 +5,10 @@ import type { Elemento } from './CanvasEditor';
 type Props = {
   elemento: Elemento | null;
   onUpdate: (fn: (el: Elemento) => Elemento) => void;
+  canvasHeight: number; // ✅ nuevo
 };
 
-export default function PropiedadesPanel({ elemento, onUpdate }: Props) {
+export default function PropiedadesPanel({ elemento, onUpdate, canvasHeight }: Props) {
   if (!elemento) return <div style={{ padding: 10 }}>Selecciona un elemento…</div>;
 
   const set = (p: any) =>
@@ -16,6 +17,10 @@ export default function PropiedadesPanel({ elemento, onUpdate }: Props) {
   const toggleLock = () => {
     set({ locked: !elemento.props?.locked });
   };
+
+  const pxToRel = (px: number) => +(px / canvasHeight).toFixed(4);
+  const relToPx = (rel: number) => Math.round(rel * canvasHeight);
+
 
   const bloqueBase = (
     <div style={{ marginTop: 10 }}>
@@ -35,48 +40,52 @@ export default function PropiedadesPanel({ elemento, onUpdate }: Props) {
       </button>
     </div>
   );
+  
 
-  /* ------------------- SELECTOR ------------------- */
-  if (elemento.tipo === 'Selector') {
-    const lista = elemento.props?.options ?? [];
-    const [texto, setTexto] = useState(lista.join('\n'));
+/* ------------------- SELECTOR ------------------- */
+if (elemento.tipo === 'Selector') {
+  const lista = elemento.props?.options ?? [];
+  const [texto, setTexto] = useState(lista.join('\n'));
 
-    const apply = (v: string) => {
-      setTexto(v);
-      set({
-        options: v.split('\n').map((s) => s.trim()).filter(Boolean),
-      });
-    };
+  const apply = (v: string) => {
+    setTexto(v);
+    set({
+      options: v.split('\n').map((s) => s.trim()).filter(Boolean),
+    });
+  };
 
-    return (
-      <div style={{ padding: 10 }}>
-        <h4>Selector</h4>
+  return (
+    <div style={{ padding: 10 }}>
+      <h4>Selector</h4>
 
-        <label style={{ display: 'block', marginBottom: 6 }}>
-          Opciones (una por línea)
-          <textarea
-            style={{ width: '100%', height: 100 }}
-            value={texto}
-            onChange={(e) => apply(e.target.value)}
-          />
-        </label>
+      <label style={{ display: 'block', marginBottom: 6 }}>
+        Opciones (una por línea)
+        <textarea
+          style={{ width: '100%', height: 100 }}
+          value={texto}
+          onChange={(e) => apply(e.target.value)}
+        />
+      </label>
 
-        <label style={{ display: 'block', marginBottom: 6 }}>
-          Tamaño de texto (px):
-          <input
-            type="number"
-            min={8}
-            max={72}
-            value={elemento.props?.fontSize ?? 14}
-            onChange={(e) => set({ fontSize: Number(e.target.value) || 14 })}
-            style={{ width: '100%', marginTop: 4 }}
-          />
-        </label>
+      <label style={{ display: 'block', marginBottom: 6 }}>
+        Tamaño de texto (px):
+        <input
+          type="number"
+          min={8}
+          max={72}
+          value={relToPx(elemento.props?.fontSize ?? 0.02)} // ← muestra en px reales
+          onChange={(e) =>
+            set({ fontSize: pxToRel(Number(e.target.value) || 14) }) // ← guarda como relativo
+          }
+          style={{ width: '100%', marginTop: 4 }}
+        />
+      </label>
 
-        {bloqueBase}
-      </div>
-    );
-  }
+      {bloqueBase}
+    </div>
+  );
+}
+
 
   /* ------------------- BOTÓN ------------------- */
   if (elemento.tipo === 'Boton') {
@@ -132,8 +141,8 @@ export default function PropiedadesPanel({ elemento, onUpdate }: Props) {
             type="number"
             min={8}
             max={72}
-            value={elemento.props?.fontSize ?? 14}
-            onChange={(e) => set({ fontSize: Number(e.target.value) || 14 })}
+            value={relToPx(elemento.props?.fontSize ?? 0.02)} // ✅ muestra en px
+            onChange={(e) => set({ fontSize: pxToRel(Number(e.target.value) || 14) })} // ✅ guarda como proporcional
             style={{ width: '100%', marginTop: 4 }}
           />
         </label>
@@ -143,7 +152,7 @@ export default function PropiedadesPanel({ elemento, onUpdate }: Props) {
     );
   }
 
-  /* ------------------- CHECKBOX ------------------- */
+/* ------------------- CHECKBOX ------------------- */
   if (elemento.tipo === 'Checkbox') {
     return (
       <div style={{ padding: 10 }}>
@@ -165,8 +174,8 @@ export default function PropiedadesPanel({ elemento, onUpdate }: Props) {
             type="number"
             min={8}
             max={72}
-            value={elemento.props?.fontSize ?? 14}
-            onChange={(e) => set({ fontSize: Number(e.target.value) || 14 })}
+            value={relToPx(elemento.props?.fontSize ?? 0.02)}
+            onChange={(e) => set({ fontSize: pxToRel(Number(e.target.value) || 14) })}
             style={{ width: '100%', marginTop: 4 }}
           />
         </label>
@@ -176,83 +185,130 @@ export default function PropiedadesPanel({ elemento, onUpdate }: Props) {
     );
   }
 
-  /* ------------------- TABLA ------------------- */
-  if (elemento.tipo === 'Tabla') {
-    const filas = elemento.props?.data?.length ?? 2;
-    const columnas = elemento.props?.headers?.length ?? 3;
 
-    return (
-      <div style={{ padding: 10 }}>
-        <h4>Tabla</h4>
+/* ------------------- TABLA ------------------- */
+if (elemento.tipo === 'Tabla') {
+  const filas = elemento.props?.data?.length ?? 2;
+  const columnas = elemento.props?.headers?.length ?? 3;
 
-        <label>
-          Filas:
-          <input
-            type="number"
-            min={1}
-            max={50}
-            value={filas}
-            onChange={(e) => {
-              const n = parseInt(e.target.value);
-              const old = elemento.props?.data || [];
-              const updated = [...old];
-              while (updated.length < n)
-                updated.push(Array(columnas).fill('...'));
-              updated.length = n;
-              set({ data: updated });
-            }}
-            style={{ width: '100%', marginBottom: 8 }}
-          />
-        </label>
+  const relToPx = (rel: number) => Math.round(rel * canvasHeight);
+  const pxToRel = (px: number) => +(px / canvasHeight).toFixed(4);
 
-        <label>
-          Columnas:
-          <input
-            type="number"
-            min={1}
-            max={10}
-            value={columnas}
-            onChange={(e) => {
-              const n = parseInt(e.target.value);
-              const oldData = elemento.props?.data || [];
-              const newData = oldData.map((fila: string[]) => {
-                const f = [...fila];
-                while (f.length < n) f.push('...');
-                f.length = n;
-                return f;
-              });
+  return (
+    <div style={{ padding: 10 }}>
+      <h4>Tabla</h4>
 
-              const newHeaders = [...(elemento.props?.headers || [])];
-              while (newHeaders.length < n)
-                newHeaders.push(`Col ${newHeaders.length + 1}`);
-              newHeaders.length = n;
+      <label>
+        Filas:
+        <input
+          type="number"
+          min={1}
+          max={50}
+          value={filas}
+          onChange={(e) => {
+            const n = parseInt(e.target.value);
+            const old = elemento.props?.data || [];
+            const updated = [...old];
+            while (updated.length < n)
+              updated.push(Array(columnas).fill('...'));
+            updated.length = n;
+            onUpdate((el) => ({
+              ...el,
+              props: { ...el.props, data: updated },
+            }));
+          }}
+          style={{ width: '100%', marginBottom: 8 }}
+        />
+      </label>
 
-              const newWidths = [...(elemento.props?.colWidths || [])];
-              while (newWidths.length < n) newWidths.push(120);
-              newWidths.length = n;
+      <label>
+        Columnas:
+        <input
+          type="number"
+          min={1}
+          max={10}
+          value={columnas}
+          onChange={(e) => {
+            const n = parseInt(e.target.value);
+            const oldData = elemento.props?.data || [];
+            const newData = oldData.map((fila: string[]) => {
+              const f = [...fila];
+              while (f.length < n) f.push('...');
+              f.length = n;
+              return f;
+            });
 
-              set({ data: newData, headers: newHeaders, colWidths: newWidths });
-            }}
-            style={{ width: '100%', marginBottom: 8 }}
-          />
-        </label>
+            const newHeaders = [...(elemento.props?.headers || [])];
+            while (newHeaders.length < n)
+              newHeaders.push(`Col ${newHeaders.length + 1}`);
+            newHeaders.length = n;
 
-        <label>
-          Tamaño de texto (px):
-          <input
-            type="number"
-            min={8}
-            max={30}
-            value={elemento.props?.fontSize ?? 14}
-            onChange={(e) => set({ fontSize: parseInt(e.target.value) || 14 })}
-            style={{ width: '100%', marginBottom: 8 }}
-          />
-        </label>
+            const newWidths = [...(elemento.props?.colWidths || [])];
+            while (newWidths.length < n) newWidths.push(120);
+            newWidths.length = n;
 
-        {bloqueBase}
+            onUpdate((el) => ({
+              ...el,
+              props: {
+                ...el.props,
+                data: newData,
+                headers: newHeaders,
+                colWidths: newWidths,
+              },
+            }));
+          }}
+          style={{ width: '100%', marginBottom: 8 }}
+        />
+      </label>
+
+      <label>
+        Tamaño de texto (px):
+        <input
+          type="number"
+          min={8}
+          max={30}
+          value={relToPx(elemento.props?.fontSize ?? 0.02)} // ✅ muestra en px reales
+          onChange={(e) =>
+            onUpdate((el) => ({
+              ...el,
+              props: {
+                ...el.props,
+                fontSize: pxToRel(Number(e.target.value) || 14), // ✅ guarda como proporcional
+              },
+            }))
+          }
+          style={{ width: '100%', marginBottom: 8 }}
+        />
+      </label>
+
+      <div style={{ marginTop: 10 }}>
+        <button
+          onClick={() =>
+            onUpdate((el) => ({
+              ...el,
+              props: {
+                ...el.props,
+                locked: !el.props?.locked,
+              },
+            }))
+          }
+          style={{
+            width: '100%',
+            padding: 6,
+            background: elemento.props?.locked ? '#ef4444' : '#10b981',
+            color: '#fff',
+            border: 'none',
+            borderRadius: 4,
+            cursor: 'pointer',
+          }}
+        >
+          {elemento.props?.locked ? '🔒 Movimiento bloqueado' : '🔓 Movimiento libre'}
+        </button>
       </div>
-    );
-  }
+    </div>
+  );
+}
+
   /* ------------------- LINK ------------------- */
   if (elemento.tipo === 'Link') {
     return (
@@ -432,10 +488,11 @@ if (elemento.tipo === 'Label') {
           type="number"
           min={8}
           max={72}
-          value={elemento.props?.fontSize ?? 14}
-          onChange={(e) => set({ fontSize: Number(e.target.value) || 14 })}
+          value={relToPx(elemento.props?.fontSize ?? 0.02)} // ✅ muestra en px
+          onChange={(e) => set({ fontSize: pxToRel(Number(e.target.value) || 14) })} // ✅ guarda como valor proporcional
           style={{ width: '100%', marginTop: 4 }}
         />
+
       </label>
 
       <label style={{ display: 'block', marginBottom: 6 }}>
@@ -463,6 +520,7 @@ if (elemento.tipo === 'Label') {
   );
 }
 /* ------------------- INPUTBOX ------------------- */
+
 if (elemento.tipo === 'InputBox') {
   return (
     <div style={{ padding: 10 }}>
@@ -484,8 +542,10 @@ if (elemento.tipo === 'InputBox') {
           type="number"
           min={8}
           max={72}
-          value={elemento.props?.fontSize ?? 14}
-          onChange={(e) => set({ fontSize: Number(e.target.value) || 14 })}
+          value={relToPx(elemento.props?.fontSize ?? 0.02)} // ✅ mostrar en px reales
+          onChange={(e) =>
+            set({ fontSize: pxToRel(Number(e.target.value) || 14) }) // ✅ guardar como valor relativo
+          }
           style={{ width: '100%', marginTop: 4 }}
         />
       </label>
@@ -494,6 +554,7 @@ if (elemento.tipo === 'InputBox') {
     </div>
   );
 }
+
 /* ------------------- INPUTFECHA ------------------- */
 if (elemento.tipo === 'InputFecha') {
   return (
@@ -506,8 +567,10 @@ if (elemento.tipo === 'InputFecha') {
           type="number"
           min={8}
           max={72}
-          value={elemento.props?.fontSize ?? 14}
-          onChange={(e) => set({ fontSize: Number(e.target.value) || 14 })}
+          value={relToPx(elemento.props?.fontSize ?? 0.02)} // ✅ mostrar en px
+          onChange={(e) =>
+            set({ fontSize: pxToRel(Number(e.target.value) || 14) }) // ✅ guardar como proporcional
+          }
           style={{ width: '100%', marginTop: 4 }}
         />
       </label>
@@ -516,8 +579,6 @@ if (elemento.tipo === 'InputFecha') {
     </div>
   );
 }
-
-
 
   return <div style={{ padding: 10 }}>Sin propiedades editables</div>;
 }

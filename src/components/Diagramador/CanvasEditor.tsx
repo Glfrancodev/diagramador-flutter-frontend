@@ -27,11 +27,13 @@ type Props = {
   selectedElementId?: string | null;
 };
 
-const defaultProps = (tipo: string) => {
+const defaultProps = (tipo: string, canvasHeight: number) => {
+    const scale = canvasHeight; // usar canvas height para escalar
+    const px = (v: number) => +(v / scale).toFixed(4); // valor normalizado
     if (tipo === 'Label') {
     return {
       texto: 'Etiqueta',
-      fontSize: 14,
+      fontSize: px(14),
       color: '#000000',
       bold: false,
     };
@@ -39,34 +41,33 @@ const defaultProps = (tipo: string) => {
   if (tipo === 'InputBox') {
     return {
       placeholder: 'Ingrese texto...',
-      fontSize: 14,
+      fontSize: px(14),
     };
   }
-  if (tipo === 'Selector') return { options: ['Opción 1', 'Opción 2'], fontSize: 14 };
+  if (tipo === 'Selector') return { options: ['Opción 1', 'Opción 2'], fontSize: px(14), };
   if (tipo === 'Boton') {
     return {
       texto: 'Botón',
       color: '#007bff',
       textColor: '#ffffff',
       borderRadius: 4,
-      fontSize: 14,
+      fontSize: px(14),
     };
   }
 
-  if (tipo === 'Checkbox') return { texto: 'Opción', fontSize: 14 };
-  if (tipo === 'Tabla') {
-    return {
-      headers: ['Col 1', 'Col 2', 'Col 3'],
-      data: [
-        ['A1', 'B1', 'C1'],
-        ['A2', 'B2', 'C2'],
-      ],
-      colWidths: [120, 120, 120],
-      fontSize: 14,
-    };
-  }
+  if (tipo === 'Checkbox') return { texto: 'Opción', fontSize: px(14), };
+if (tipo === 'Tabla') {
+  const rel = +(120 / canvasHeight /* ⬅ solo para inicial */).toFixed(4); // ≈ 0.20 en phone
+  return {
+    headers: ['Col 1', 'Col 2', 'Col 3'],
+    data: [['A1','B1','C1'], ['A2','B2','C2']],
+    colWidths: [rel, rel, rel],   // ← ya proporcional
+    fontSize: px(14),
+  };
+}
+
   if (tipo === 'Link') {
-    return { texto: 'Visítanos', url: 'https://ejemplo.com', fontSize: 14, color: '#2563eb' };
+    return { texto: 'Visítanos', url: 'https://ejemplo.com', fontSize: px(14), color: '#2563eb' };
   }
   if (tipo === 'Sidebar') {
     return {
@@ -80,7 +81,7 @@ const defaultProps = (tipo: string) => {
   }
   if (tipo === 'InputFecha') {
   return {
-    fontSize: 14,
+    fontSize: px(14),
   };
   }
   return {};
@@ -129,7 +130,7 @@ export default function CanvasEditor({
           y,
           width: widthRel,
           height: heightRel,
-          props: defaultProps(item.tipo),
+          props: defaultProps(item.tipo, height),
         };
 
         onChange(tabId, (prev) => [...prev, nuevo]);
@@ -171,6 +172,8 @@ const move = (id: string, x: number, y: number, w?: number, h?: number) =>
             {...el.props}
             titulo={el.props?.titulo || 'Menú'} // ✅ NUEVO
             zoom={zoom}
+            canvasHeight={height} // ✅ nuevo
+            canvasWidth={width}   // ✅ nuevo
             visible={isVisible}
             onToggle={(nextVisible: boolean) => {
               onChange(tabId, (prev) =>
@@ -188,6 +191,8 @@ const move = (id: string, x: number, y: number, w?: number, h?: number) =>
         <Comp
           {...el.props}
           zoom={zoom}
+          canvasHeight={height} // ✅ nuevo
+          canvasWidth={width} // ✅ NUEVO
           onChange={
             isTabla
               ? (next: any) =>

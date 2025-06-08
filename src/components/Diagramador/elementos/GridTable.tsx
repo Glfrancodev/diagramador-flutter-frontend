@@ -4,9 +4,11 @@ import './GridTable.css';
 type Props = {
   headers: string[];
   data: string[][];
-  colWidths: number[];
-  fontSize: number;
+  colWidths: number[];       // ← proporcionales (0–1)
+  fontSize: number;          // ← proporcional a canvasHeight
   zoom: number;
+  canvasHeight: number;
+  canvasWidth: number;
   onChange: (next: {
     headers: string[];
     data: string[][];
@@ -20,8 +22,14 @@ const GridTable: React.FC<Props> = ({
   colWidths,
   fontSize,
   zoom,
+  canvasHeight,
+  canvasWidth,
   onChange,
 }) => {
+  const textPx = fontSize * canvasHeight * zoom;
+
+  const getAbsWidth = (rel: number) => rel * canvasWidth * zoom;
+
   const editHeader = (i: number, value: string) => {
     const updated = [...headers];
     updated[i] = value;
@@ -38,14 +46,15 @@ const GridTable: React.FC<Props> = ({
   const startResize = (i: number, e: React.MouseEvent) => {
     e.preventDefault();
     const startX = e.clientX;
-    const startWidth = colWidths[i];
+    const startWidthPx = getAbsWidth(colWidths[i]);
 
     const onMove = (ev: MouseEvent) => {
       const delta = ev.clientX - startX;
-      const newWidths = colWidths.map((w, idx) =>
-        idx === i ? Math.max(40, startWidth + delta) : w
-      );
-      onChange({ headers, data, colWidths: newWidths });
+      const newWidthPx = Math.max(40, startWidthPx + delta);
+      const newRel = +(newWidthPx / (canvasWidth * zoom)).toFixed(4);
+      const updated = [...colWidths];
+      updated[i] = newRel;
+      onChange({ headers, data, colWidths: updated });
     };
 
     const onUp = () => {
@@ -59,26 +68,17 @@ const GridTable: React.FC<Props> = ({
 
   return (
     <div
-      className="grid-table-wrapper"
       style={{
-        width: `${100 / zoom}%`,
-        height: `${100 / zoom}%`,
-        overflowX: 'auto',
-        overflowY: 'auto',
-        border: '1px solid #ccc',
+        width: '100%',
+        height: '100%',
+        overflow: 'auto',
         background: '#fff',
-        transform: `scale(${zoom})`,
-        transformOrigin: 'top left',
       }}
     >
       <div
         className="grid-table"
         style={{
-          fontSize: fontSize,
-          display: 'flex',
-          flexDirection: 'column',
-          width: 'fit-content',
-          minWidth: '100%',
+          fontSize: textPx,
         }}
       >
         {/* CABECERA */}
@@ -87,7 +87,7 @@ const GridTable: React.FC<Props> = ({
             <div
               className="cell header-cell"
               key={i}
-              style={{ width: colWidths[i] }}
+              style={{ width: getAbsWidth(colWidths[i]) }}
             >
               <div
                 className="content"
@@ -111,10 +111,7 @@ const GridTable: React.FC<Props> = ({
               >
                 {text || '...'}
               </div>
-              <div
-                className="col-resizer"
-                onMouseDown={(e) => startResize(i, e)}
-              />
+              <div className="col-resizer" onMouseDown={(e) => startResize(i, e)} />
             </div>
           ))}
         </div>
@@ -123,7 +120,11 @@ const GridTable: React.FC<Props> = ({
         {data.map((fila, r) => (
           <div className="row" key={r}>
             {fila.map((cel, c) => (
-              <div className="cell" key={c} style={{ width: colWidths[c] }}>
+              <div
+                className="cell"
+                key={c}
+                style={{ width: getAbsWidth(colWidths[c]) }}
+              >
                 <div
                   className="content"
                   onDoubleClick={(e) => {

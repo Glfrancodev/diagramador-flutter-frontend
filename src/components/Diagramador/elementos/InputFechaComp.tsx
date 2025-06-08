@@ -1,13 +1,16 @@
+// src/components/Diagramador/elementos/InputFechaComp.tsx
 import React from "react";
 
 type Props = {
-  fontSize?: number;
+  fontSize?: number; // ✅ proporcional
   zoom: number;
+  canvasHeight: number; // ✅ nuevo
 };
 
 const InputFechaComp: React.FC<Props> = ({
-  fontSize = 14,
+  fontSize = 0.02, // valor proporcional
   zoom,
+  canvasHeight,
 }) => (
   <input
     type="date"
@@ -15,7 +18,7 @@ const InputFechaComp: React.FC<Props> = ({
     style={{
       width: "100%",
       height: "100%",
-      fontSize: fontSize * zoom,
+      fontSize: fontSize * canvasHeight * zoom, // ✅ cálculo real
       padding: "4px 8px",
       border: "1px solid #ccc",
       borderRadius: 4,

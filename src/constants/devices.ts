@@ -8,8 +8,8 @@ export const DEVICES = {
   },
   phoneStandard: {
     name: "Celular estándar",
-    width: 414,
-    height: 896,
+    width: 390,
+    height: 844,
   },
   tablet: {
     name: "Tab s6 lite",
