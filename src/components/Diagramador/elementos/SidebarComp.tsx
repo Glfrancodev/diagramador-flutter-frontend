@@ -6,8 +6,12 @@ type Props = {
   visible: boolean;
   zoom: number;
   onToggle: (next: boolean) => void;
-  fontSize?: number; // ✅ nuevo prop
-  canvasHeight: number; // ✅ necesario para escalar bien
+  fontSize?: number;
+  bgColor?: string;
+  textColor?: string;
+  itemBgColor?: string;
+  borderRadius?: number; // ✅ nuevo
+  canvasHeight: number;
 };
 
 const SidebarComp: React.FC<Props> = ({
@@ -16,7 +20,11 @@ const SidebarComp: React.FC<Props> = ({
   visible,
   zoom,
   onToggle,
-  fontSize = 0.02, // ✅ default proporcional
+  fontSize = 0.02,
+  bgColor = '#1f2937',
+  textColor = '#ffffff',
+  itemBgColor = '#374151',
+  borderRadius = 0, // ✅ default
   canvasHeight,
 }) => {
   const pixelFontSize = fontSize * canvasHeight * zoom;
@@ -31,6 +39,8 @@ const SidebarComp: React.FC<Props> = ({
           top: 0,
           left: 0,
           zIndex: 10,
+          borderRadius: borderRadius * zoom, // ✅ aplicado también al botón flotante
+          overflow: 'hidden',
         }}
       >
         <button
@@ -39,10 +49,9 @@ const SidebarComp: React.FC<Props> = ({
             width: '100%',
             height: '100%',
             fontSize: pixelFontSize,
-            background: '#2563eb',
-            color: '#fff',
+            background: itemBgColor,
+            color: textColor,
             border: 'none',
-            borderRadius: '0 4px 4px 0',
             cursor: 'pointer',
           }}
           title="Mostrar menú"
@@ -58,16 +67,18 @@ const SidebarComp: React.FC<Props> = ({
       style={{
         width: '100%',
         height: '100%',
-        backgroundColor: '#1f2937',
-        color: '#fff',
+        backgroundColor: bgColor,
+        color: textColor,
         padding: 10,
         boxSizing: 'border-box',
         zIndex: 10,
         overflowY: 'auto',
         display: 'flex',
         flexDirection: 'column',
+        borderRadius: borderRadius * zoom, // ✅ aplicado
       }}
     >
+      {/* encabezado */}
       <div
         style={{
           marginBottom: 12,
@@ -82,8 +93,8 @@ const SidebarComp: React.FC<Props> = ({
           onClick={() => onToggle(false)}
           style={{
             marginLeft: 8,
-            background: '#2563eb',
-            color: '#fff',
+            background: itemBgColor,
+            color: textColor,
             border: 'none',
             borderRadius: 4,
             fontSize: pixelFontSize,
@@ -96,6 +107,7 @@ const SidebarComp: React.FC<Props> = ({
         </button>
       </div>
 
+      {/* ítems */}
       {items.map((item, i) => (
         <a
           key={i}
@@ -104,9 +116,9 @@ const SidebarComp: React.FC<Props> = ({
             display: 'block',
             padding: '6px 8px',
             fontSize: pixelFontSize,
-            color: '#fff',
+            color: textColor,
             textDecoration: 'none',
-            backgroundColor: '#374151',
+            backgroundColor: itemBgColor,
             borderRadius: 4,
             marginBottom: 6,
           }}

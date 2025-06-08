@@ -30,6 +30,22 @@ type Props = {
 const defaultProps = (tipo: string, canvasHeight: number) => {
     const scale = canvasHeight; // usar canvas height para escalar
     const px = (v: number) => +(v / scale).toFixed(4); // valor normalizado
+    if (tipo === 'Imagen') {
+      return {
+        nombre: '',
+        tipo: '',
+        idArchivo: '',
+        borderRadius: 0,
+      };
+    }
+    if (tipo === 'Video') {
+      return {
+        nombre: '',
+        idArchivo: '',
+        borderRadius: 0,
+      };
+    }
+
     if (tipo === 'Label') {
     return {
       texto: 'Etiqueta',
@@ -77,7 +93,9 @@ if (tipo === 'Tabla') {
         { texto: 'Pantalla 2', nombrePestana: 'Pantalla 2' },
       ],
       visible: true,
-      fontSize: px(14), // ✅ nuevo
+      fontSize: px(14),     // ✅ ya estaba
+      bgColor: '#1f2937',   // ✅ nuevo
+      textColor: '#ffffff', // ✅ nuevo
     };
   }
 

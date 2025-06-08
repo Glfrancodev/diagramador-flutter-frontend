@@ -1,14 +1,19 @@
 // src/components/Diagramador/PropiedadesPanel.tsx
 import { useState } from 'react';
 import type { Elemento } from './CanvasEditor';
+import ModalSeleccionVideo from './ModalSeleccionVideo';
+import ModalSeleccionImagen from './ModalSeleccionImagen';
+import ModalSeleccionAudio from './ModalSeleccionAudio';
+
 
 type Props = {
   elemento: Elemento | null;
   onUpdate: (fn: (el: Elemento) => Elemento) => void;
   canvasHeight: number; // ✅ nuevo
+  proyectoId: string; // <- ✅ nuevo
 };
 
-export default function PropiedadesPanel({ elemento, onUpdate, canvasHeight }: Props) {
+export default function PropiedadesPanel({ elemento, onUpdate, canvasHeight, proyectoId}: Props) {
   if (!elemento) return <div style={{ padding: 10 }}>Selecciona un elemento…</div>;
 
   const set = (p: any) =>
@@ -362,123 +367,163 @@ if (elemento.tipo === 'Tabla') {
       </div>
     );
   }
-  /* ------------------- SIDEBAR ------------------- */
-  if (elemento.tipo === 'Sidebar') {
-    const lista = elemento.props?.items || [];
+if (elemento.tipo === 'Sidebar') {
+  const lista = elemento.props?.items || [];
 
-    const updateItem = (i: number, key: 'texto' | 'nombrePestana', value: string) => {
-      const copy = [...lista];
-      copy[i] = { ...copy[i], [key]: value };
-      set({ items: copy });
-    };
+  const updateItem = (i: number, key: 'texto' | 'nombrePestana', value: string) => {
+    const copy = [...lista];
+    copy[i] = { ...copy[i], [key]: value };
+    set({ items: copy });
+  };
 
-    const removeItem = (i: number) => {
-      const copy = [...lista];
-      copy.splice(i, 1);
-      set({ items: copy });
-    };
+  const removeItem = (i: number) => {
+    const copy = [...lista];
+    copy.splice(i, 1);
+    set({ items: copy });
+  };
 
-    const addItem = () => {
-      const copy = [...lista, { texto: 'Nuevo', nombrePestana: 'Pantalla 1' }];
-      set({ items: copy });
-    };
+  const addItem = () => {
+    const copy = [...lista, { texto: 'Nuevo', nombrePestana: 'Pantalla 1' }];
+    set({ items: copy });
+  };
 
-    return (
-      <div style={{ padding: 10, maxHeight: '100%', overflowY: 'auto' }}>
-        <h4>Sidebar</h4>
-            <label style={{ display: 'block', marginBottom: 6 }}>
-              Tamaño de texto (px):
-              <input
-                type="number"
-                min={8}
-                max={72}
-                value={relToPx(elemento.props?.fontSize ?? 0.02)} // muestra en px reales
-                onChange={(e) => set({ fontSize: pxToRel(Number(e.target.value) || 14) })} // guarda proporcional
-                style={{ width: '100%', marginTop: 4 }}
-              />
-            </label>
-        <label style={{ display: 'block', marginBottom: 6 }}>
-          Título del menú:
-          <input
-            type="text"
-            value={elemento.props?.titulo || 'Menú'}
-            onChange={(e) => set({ titulo: e.target.value })}
-            style={{ width: '100%', marginTop: 4 }}
-          />
-        </label>
+  return (
+    <div style={{ padding: 10, maxHeight: '100%', overflowY: 'auto' }}>
+      <h4>Sidebar</h4>
+      <label style={{ display: 'block', marginBottom: 6 }}>
+        Tamaño de texto (px):
+        <input
+          type="number"
+          min={8}
+          max={72}
+          value={relToPx(elemento.props?.fontSize ?? 0.02)}
+          onChange={(e) => set({ fontSize: pxToRel(Number(e.target.value) || 14) })}
+          style={{ width: '100%', marginTop: 4 }}
+        />
+      </label>
 
-        {lista.map((item: any, i: number) => (
-          <div key={i} style={{ marginBottom: 12 }}>
-            <label style={{ display: 'block', marginBottom: 4 }}>
-              Texto del ítem:
-              <input
-                type="text"
-                value={item.texto}
-                onChange={(e) => updateItem(i, 'texto', e.target.value)}
-                style={{ width: '100%', marginTop: 4 }}
-              />
-            </label>
+      <label style={{ display: 'block', marginBottom: 6 }}>
+        Color de fondo:
+        <input
+          type="color"
+          value={elemento.props?.bgColor || '#1f2937'}
+          onChange={(e) => set({ bgColor: e.target.value })}
+          style={{ width: '100%', marginTop: 4 }}
+        />
+      </label>
 
-            <label style={{ display: 'block', marginBottom: 4 }}>
-              Nombre de pestaña destino:
-              <input
-                type="text"
-                value={item.nombrePestana}
-                onChange={(e) => updateItem(i, 'nombrePestana', e.target.value)}
-                style={{ width: '100%', marginTop: 4 }}
-              />
-            </label>
+      <label style={{ display: 'block', marginBottom: 6 }}>
+        Color del texto:
+        <input
+          type="color"
+          value={elemento.props?.textColor || '#ffffff'}
+          onChange={(e) => set({ textColor: e.target.value })}
+          style={{ width: '100%', marginTop: 4 }}
+        />
+      </label>
 
-            <button
-              onClick={() => removeItem(i)}
-              style={{
-                width: '100%',
-                background: '#dc2626',
-                color: '#fff',
-                border: 'none',
-                borderRadius: 4,
-                padding: 6,
-                marginTop: 4,
-              }}
-            >
-              Eliminar
-            </button>
-            
-          </div>
-          
-        ))}
+      <label style={{ display: 'block', marginBottom: 6 }}>
+        Color de fondo de ítems:
+        <input
+          type="color"
+          value={elemento.props?.itemBgColor || '#374151'}
+          onChange={(e) => set({ itemBgColor: e.target.value })}
+          style={{ width: '100%', marginTop: 4 }}
+        />
+      </label>
+      <label style={{ display: 'block', marginBottom: 6 }}>
+        Radio de borde (px):
+        <input
+          type="number"
+          min={0}
+          max={50}
+          value={elemento.props?.borderRadius ?? 0}
+          onChange={(e) => set({ borderRadius: Number(e.target.value) || 0 })}
+          style={{ width: '100%', marginTop: 4 }}
+        />
+      </label>
 
-        <button
-          onClick={addItem}
-          style={{
-            width: '100%',
-            background: '#2563eb',
-            color: '#fff',
-            border: 'none',
-            borderRadius: 4,
-            padding: 6,
-            marginBottom: 8,
-          }}
-        >
-          + Añadir Item
-        </button>
+      <label style={{ display: 'block', marginBottom: 6 }}>
+        Título del menú:
+        <input
+          type="text"
+          value={elemento.props?.titulo || 'Menú'}
+          onChange={(e) => set({ titulo: e.target.value })}
+          style={{ width: '100%', marginTop: 4 }}
+        />
+      </label>
 
-        <div style={{ marginTop: 10 }}>
-          <label>
-            Visible por defecto:
+      {lista.map((item: any, i: number) => (
+        <div key={i} style={{ marginBottom: 12 }}>
+          <label style={{ display: 'block', marginBottom: 4 }}>
+            Texto del ítem:
             <input
-              type="checkbox"
-              checked={elemento.props?.visible ?? true}
-              onChange={(e) => set({ visible: e.target.checked })}
-              style={{ marginLeft: 8 }}
+              type="text"
+              value={item.texto}
+              onChange={(e) => updateItem(i, 'texto', e.target.value)}
+              style={{ width: '100%', marginTop: 4 }}
             />
           </label>
-        </div>
 
-        {bloqueBase}
+          <label style={{ display: 'block', marginBottom: 4 }}>
+            Nombre de pestaña destino:
+            <input
+              type="text"
+              value={item.nombrePestana}
+              onChange={(e) => updateItem(i, 'nombrePestana', e.target.value)}
+              style={{ width: '100%', marginTop: 4 }}
+            />
+          </label>
+
+          <button
+            onClick={() => removeItem(i)}
+            style={{
+              width: '100%',
+              background: '#dc2626',
+              color: '#fff',
+              border: 'none',
+              borderRadius: 4,
+              padding: 6,
+              marginTop: 4,
+            }}
+          >
+            Eliminar
+          </button>
+        </div>
+      ))}
+
+      <button
+        onClick={addItem}
+        style={{
+          width: '100%',
+          background: '#2563eb',
+          color: '#fff',
+          border: 'none',
+          borderRadius: 4,
+          padding: 6,
+          marginBottom: 8,
+        }}
+      >
+        + Añadir Item
+      </button>
+
+      <div style={{ marginTop: 10 }}>
+        <label>
+          Visible:
+          <input
+            type="checkbox"
+            checked={elemento.props?.visible ?? true}
+            onChange={(e) => set({ visible: e.target.checked })}
+            style={{ marginLeft: 8 }}
+          />
+        </label>
       </div>
-    );
-  }
+
+      {bloqueBase}
+    </div>
+  );
+}
+
 /* ------------------- LABEL ------------------- */
 if (elemento.tipo === 'Label') {
   return (
@@ -592,6 +637,270 @@ if (elemento.tipo === 'InputFecha') {
     </div>
   );
 }
+
+if (elemento.tipo === 'Imagen') {
+  const [showSelector, setShowSelector] = useState(false);
+
+  const set = (p: any) =>
+    onUpdate((el) => ({ ...el, props: { ...el.props, ...p } }));
+
+  return (
+    <div style={{ padding: 10 }}>
+      <h4>Imagen</h4>
+
+      <button
+        onClick={() => setShowSelector(true)}
+        style={{
+          width: '100%',
+          padding: 6,
+          background: '#2563eb',
+          color: '#fff',
+          border: 'none',
+          borderRadius: 4,
+          cursor: 'pointer',
+          marginBottom: 10,
+        }}
+      >
+        Seleccionar imagen
+      </button>
+
+      {elemento.props?.nombreArchivo && (
+        <div style={{ fontSize: 13, marginBottom: 10 }}>
+          <p><strong>Nombre:</strong> {elemento.props.nombreArchivo}</p>
+          <p><strong>Tipo:</strong> {elemento.props.tipo}</p>
+        </div>
+      )}
+
+      <label style={{ display: 'block', marginBottom: 6 }}>
+        Radio de borde (px):
+        <input
+          type="number"
+          min={0}
+          max={50}
+          value={elemento.props?.borderRadius ?? 0}
+          onChange={(e) => set({ borderRadius: Number(e.target.value) || 0 })}
+          style={{ width: '100%', marginTop: 4 }}
+        />
+      </label>
+
+      <div style={{ marginTop: 10 }}>
+        <button
+          onClick={() => set({ locked: !elemento.props?.locked })}
+          style={{
+            width: '100%',
+            padding: 6,
+            background: elemento.props?.locked ? '#ef4444' : '#10b981',
+            color: '#fff',
+            border: 'none',
+            borderRadius: 4,
+            cursor: 'pointer',
+          }}
+        >
+          {elemento.props?.locked ? '🔒 Movimiento bloqueado' : '🔓 Movimiento libre'}
+        </button>
+      </div>
+
+      {showSelector && (
+        <ModalSeleccionImagen
+          proyectoId={proyectoId}
+          onClose={() => setShowSelector(false)}
+          onSelect={(archivo) => {
+            set({
+              idArchivo: archivo.idArchivo,
+              nombreArchivo: archivo.nombre,
+              tipo: archivo.tipo,
+            });
+            setShowSelector(false);
+          }}
+        />
+      )}
+    </div>
+  );
+}
+  /* ------------------- VIDEO ------------------- */
+if (elemento.tipo === 'Video') {
+  const [showSelector, setShowSelector] = useState(false);
+
+  return (
+    <div style={{ padding: 10 }}>
+      <h4>Video</h4>
+
+      <button
+        onClick={() => setShowSelector(true)}
+        style={{
+          width: '100%',
+          padding: 6,
+          background: '#2563eb',
+          color: '#fff',
+          border: 'none',
+          borderRadius: 4,
+          cursor: 'pointer',
+          marginBottom: 10,
+        }}
+      >
+        Seleccionar video
+      </button>
+
+      {elemento.props?.nombreArchivo && (
+        <div style={{ fontSize: 13, marginBottom: 10 }}>
+          <p><strong>Nombre:</strong> {elemento.props.nombreArchivo}</p>
+          <p><strong>Tipo:</strong> {elemento.props.tipo}</p>
+        </div>
+      )}
+
+      <label style={{ display: 'block', marginBottom: 6 }}>
+        Radio de borde (px):
+        <input
+          type="number"
+          min={0}
+          max={50}
+          value={elemento.props?.borderRadius ?? 0}
+          onChange={(e) =>
+            set({ borderRadius: Number(e.target.value) || 0 })
+          }
+          style={{ width: '100%', marginTop: 4 }}
+        />
+      </label>
+
+      <label style={{ display: 'block', marginBottom: 6 }}>
+        🎬 Modo Cine:
+        <input
+          type="checkbox"
+          checked={elemento.props?.modoCine ?? false}
+          onChange={(e) => set({ modoCine: e.target.checked })}
+          style={{ marginLeft: 8 }}
+        />
+      </label>
+
+      <div style={{ marginTop: 10 }}>
+        <button
+          onClick={() => set({ locked: !elemento.props?.locked })}
+          style={{
+            width: '100%',
+            padding: 6,
+            background: elemento.props?.locked ? '#ef4444' : '#10b981',
+            color: '#fff',
+            border: 'none',
+            borderRadius: 4,
+            cursor: 'pointer',
+          }}
+        >
+          {elemento.props?.locked
+            ? '🔒 Movimiento bloqueado'
+            : '🔓 Movimiento libre'}
+        </button>
+      </div>
+
+      {showSelector && (
+        <ModalSeleccionVideo
+          proyectoId={proyectoId}
+          onClose={() => setShowSelector(false)}
+          onSelect={(archivo) => {
+            set({
+              idArchivo: archivo.idArchivo,
+              nombreArchivo: archivo.nombre,
+              tipo: archivo.tipo,
+            });
+            setShowSelector(false);
+          }}
+        />
+      )}
+    </div>
+  );
+}
+
+/* ------------------- AUDIO ------------------- */
+if (elemento.tipo === 'Audio') {
+  const [showSelector, setShowSelector] = useState(false);
+
+  return (
+    <div style={{ padding: 10 }}>
+      <h4>Audio</h4>
+
+      <button
+        onClick={() => setShowSelector(true)}
+        style={{
+          width: '100%',
+          padding: 6,
+          background: '#2563eb',
+          color: '#fff',
+          border: 'none',
+          borderRadius: 4,
+          cursor: 'pointer',
+          marginBottom: 10,
+        }}
+      >
+        Seleccionar audio
+      </button>
+
+      {elemento.props?.nombreArchivo && (
+        <div style={{ fontSize: 13, marginBottom: 10 }}>
+          <p><strong>Nombre:</strong> {elemento.props.nombreArchivo}</p>
+          <p><strong>Tipo:</strong> {elemento.props.tipo}</p>
+        </div>
+      )}
+
+      <label style={{ display: 'block', marginBottom: 6 }}>
+        Radio de borde (px):
+        <input
+          type="number"
+          min={0}
+          max={50}
+          value={elemento.props?.borderRadius ?? 0}
+          onChange={(e) =>
+            set({ borderRadius: Number(e.target.value) || 0 })
+          }
+          style={{ width: '100%', marginTop: 4 }}
+        />
+      </label>
+
+      <label style={{ display: 'block', marginBottom: 6 }}>
+        🎧 Modo Podcast:
+        <input
+          type="checkbox"
+          checked={elemento.props?.modoPodcast ?? false}
+          onChange={(e) => set({ modoPodcast: e.target.checked })}
+          style={{ marginLeft: 8 }}
+        />
+      </label>
+
+      <div style={{ marginTop: 10 }}>
+        <button
+          onClick={() => set({ locked: !elemento.props?.locked })}
+          style={{
+            width: '100%',
+            padding: 6,
+            background: elemento.props?.locked ? '#ef4444' : '#10b981',
+            color: '#fff',
+            border: 'none',
+            borderRadius: 4,
+            cursor: 'pointer',
+          }}
+        >
+          {elemento.props?.locked
+            ? '🔒 Movimiento bloqueado'
+            : '🔓 Movimiento libre'}
+        </button>
+      </div>
+
+      {showSelector && (
+        <ModalSeleccionAudio
+          proyectoId={proyectoId}
+          onClose={() => setShowSelector(false)}
+          onSelect={(archivo) => {
+            set({
+              idArchivo: archivo.idArchivo,
+              nombreArchivo: archivo.nombre,
+              tipo: archivo.tipo,
+            });
+            setShowSelector(false);
+          }}
+        />
+      )}
+    </div>
+  );
+}
+
 
   return <div style={{ padding: 10 }}>Sin propiedades editables</div>;
 }

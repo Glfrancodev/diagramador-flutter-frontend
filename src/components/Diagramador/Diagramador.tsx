@@ -342,6 +342,7 @@ export default function Diagramador() {
                 elemento={selectedElement}
                 onUpdate={updateElemento}
                 canvasHeight={device.height} // ✅ agregar
+                proyectoId={projectId!} // ✅ esto es lo correcto
               />
             </div>
           </div>
