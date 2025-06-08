@@ -77,8 +77,10 @@ if (tipo === 'Tabla') {
         { texto: 'Pantalla 2', nombrePestana: 'Pantalla 2' },
       ],
       visible: true,
+      fontSize: px(14), // ✅ nuevo
     };
   }
+
   if (tipo === 'InputFecha') {
   return {
     fontSize: px(14),

@@ -1,20 +1,26 @@
 import React from 'react';
 
 type Props = {
-  titulo?: string; // ✅ agregado
-  items?: { texto: string; nombrePestana: string }[]; // nombre visible de la pestaña
+  titulo?: string;
+  items?: { texto: string; nombrePestana: string }[];
   visible: boolean;
   zoom: number;
   onToggle: (next: boolean) => void;
+  fontSize?: number; // ✅ nuevo prop
+  canvasHeight: number; // ✅ necesario para escalar bien
 };
 
 const SidebarComp: React.FC<Props> = ({
-  titulo = 'Menú', // ✅ destructuración con valor por defecto
+  titulo = 'Menú',
   items = [],
   visible,
   zoom,
-  onToggle
+  onToggle,
+  fontSize = 0.02, // ✅ default proporcional
+  canvasHeight,
 }) => {
+  const pixelFontSize = fontSize * canvasHeight * zoom;
+
   if (!visible) {
     return (
       <div
@@ -32,7 +38,7 @@ const SidebarComp: React.FC<Props> = ({
           style={{
             width: '100%',
             height: '100%',
-            fontSize: 14 * zoom,
+            fontSize: pixelFontSize,
             background: '#2563eb',
             color: '#fff',
             border: 'none',
@@ -62,11 +68,10 @@ const SidebarComp: React.FC<Props> = ({
         flexDirection: 'column',
       }}
     >
-      {/* Encabezado con botón para ocultar */}
       <div
         style={{
           marginBottom: 12,
-          fontSize: 16 * zoom,
+          fontSize: pixelFontSize + 2,
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
@@ -81,7 +86,7 @@ const SidebarComp: React.FC<Props> = ({
             color: '#fff',
             border: 'none',
             borderRadius: 4,
-            fontSize: 14 * zoom,
+            fontSize: pixelFontSize,
             padding: '2px 6px',
             cursor: 'pointer',
           }}
@@ -98,7 +103,7 @@ const SidebarComp: React.FC<Props> = ({
           style={{
             display: 'block',
             padding: '6px 8px',
-            fontSize: 14 * zoom,
+            fontSize: pixelFontSize,
             color: '#fff',
             textDecoration: 'none',
             backgroundColor: '#374151',
@@ -112,5 +117,6 @@ const SidebarComp: React.FC<Props> = ({
     </div>
   );
 };
+
 
 export default SidebarComp;

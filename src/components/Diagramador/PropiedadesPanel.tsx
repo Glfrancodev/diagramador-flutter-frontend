@@ -341,11 +341,12 @@ if (elemento.tipo === 'Tabla') {
             type="number"
             min={8}
             max={72}
-            value={elemento.props?.fontSize ?? 14}
-            onChange={(e) => set({ fontSize: Number(e.target.value) || 14 })}
+            value={relToPx(elemento.props?.fontSize ?? 0.02)} // ✅ muestra en px reales
+            onChange={(e) => set({ fontSize: pxToRel(Number(e.target.value) || 14) })} // ✅ guarda como proporcional
             style={{ width: '100%', marginTop: 4 }}
           />
         </label>
+
 
         <label style={{ display: 'block', marginBottom: 6 }}>
           Color:
@@ -385,7 +386,17 @@ if (elemento.tipo === 'Tabla') {
     return (
       <div style={{ padding: 10, maxHeight: '100%', overflowY: 'auto' }}>
         <h4>Sidebar</h4>
-
+            <label style={{ display: 'block', marginBottom: 6 }}>
+              Tamaño de texto (px):
+              <input
+                type="number"
+                min={8}
+                max={72}
+                value={relToPx(elemento.props?.fontSize ?? 0.02)} // muestra en px reales
+                onChange={(e) => set({ fontSize: pxToRel(Number(e.target.value) || 14) })} // guarda proporcional
+                style={{ width: '100%', marginTop: 4 }}
+              />
+            </label>
         <label style={{ display: 'block', marginBottom: 6 }}>
           Título del menú:
           <input
@@ -432,7 +443,9 @@ if (elemento.tipo === 'Tabla') {
             >
               Eliminar
             </button>
+            
           </div>
+          
         ))}
 
         <button
