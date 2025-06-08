@@ -1059,6 +1059,38 @@ if (elemento.tipo === 'BottomNavbar') {
   );
 }
 
+if (elemento.tipo === 'Cuadrado' || elemento.tipo === 'Circulo' || elemento.tipo === 'Linea' || elemento.tipo === 'Semicirculo' || elemento.tipo === 'Triangulo' || elemento.tipo === 'Rombo') {
+  return (
+    <div style={{ padding: 10 }}>
+      <h4>{elemento.tipo}</h4>
+
+      <label style={{ display: 'block', marginBottom: 6 }}>
+        Color:
+        <input
+          type="color"
+          value={elemento.props?.color || '#000000'}
+          onChange={(e) => set({ color: e.target.value })}
+          style={{ width: '100%', marginTop: 4 }}
+        />
+      </label>
+
+      <label style={{ display: 'block', marginBottom: 6 }}>
+        Tamaño:
+        <input
+          type="number"
+          min={8}
+          max={300}
+          value={relToPx(elemento.props?.size ?? 0.1)} // Muestra en px reales
+          onChange={(e) => set({ size: pxToRel(Number(e.target.value) || 100) })}
+          style={{ width: '100%', marginTop: 4 }}
+        />
+      </label>
+
+      {bloqueBase}
+    </div>
+  );
+}
+
 
 
   return <div style={{ padding: 10 }}>Sin propiedades editables</div>;

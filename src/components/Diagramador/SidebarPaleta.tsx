@@ -16,6 +16,17 @@ const CATEGORIAS = [
     ],
   },
   {
+    nombre: "Figuras",
+    componentes: [
+      { tipo: "Cuadrado", label: "Cuadrado" },
+      { tipo: "Circulo", label: "Círculo" },
+      { tipo: "Linea", label: "Línea" },
+      { tipo: "Semicirculo", label: "Semicírculo" },
+      { tipo: "Triangulo", label: "Triángulo" },
+      { tipo: "Rombo", label: "Rombo" },
+    ],
+  },
+  {
     nombre: "Navegación",
     componentes: [
       { tipo: "Sidebar", label: "Sidebar" },
