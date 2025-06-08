@@ -6,7 +6,7 @@ type LineaProps = {
   canvasWidth: number; // Ancho del canvas
 };
 
-const Linea: React.FC<LineaProps> = ({ color, canvasHeight, canvasWidth }) => {
+const Linea: React.FC<LineaProps> = ({ color }) => {
   return (
     <div
       style={{

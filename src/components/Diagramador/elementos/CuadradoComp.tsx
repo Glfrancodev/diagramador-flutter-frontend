@@ -8,19 +8,21 @@ type CuadradoProps = {
 };
 
 const Cuadrado: React.FC<CuadradoProps> = ({ color, zoom, canvasHeight, canvasWidth }) => {
-  // Ajustamos el tamaño al 100% del contenedor, el zoom afectará proporcionalmente
-  const adjustedSize = Math.min(canvasHeight, canvasWidth) * zoom;
+  // El cuadrado ocupa el 100% del ancho y alto del contenedor
+  const adjustedWidth = canvasWidth * zoom;
+  const adjustedHeight = canvasHeight * zoom;
 
   return (
     <div
       style={{
         position: 'absolute', // Aseguramos que esté posicionado dentro del canvas
-        width: `${adjustedSize}px`, // Ancho ajustado al contenedor con zoom
-        height: `${adjustedSize}px`, // Altura ajustada al contenedor con zoom
+        width: `${adjustedWidth}px`, // Ancho ajustado al contenedor con zoom
+        height: `${adjustedHeight}px`, // Altura ajustada al contenedor con zoom
         backgroundColor: color,
-        top: '50%', // Centrado verticalmente
-        left: '50%', // Centrado horizontalmente
-        transform: 'translate(-50%, -50%)', // Para centrar perfectamente
+        top: '0', // Se coloca al principio del contenedor
+        left: '0', // Se coloca al principio del contenedor
+        margin: 'auto',
+        overflow: 'hidden', // Limitar que se desborde
         maxWidth: '100%', // Limitar al máximo el tamaño según el contenedor
         maxHeight: '100%', // Limitar al máximo el tamaño según el contenedor
       }}

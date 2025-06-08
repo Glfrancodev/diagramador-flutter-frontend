@@ -18,6 +18,7 @@ export type Elemento = {
   tipo: string;
   x: number;
   y: number;
+  zIndex: number;  // Asegúrate de que zIndex esté aquí
   width: number;
   height: number;
   props?: any;

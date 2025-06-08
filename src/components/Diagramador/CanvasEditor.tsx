@@ -10,6 +10,7 @@ export type Elemento = {
   y: number;
   width: number;
   height: number;
+  zIndex: number;  // Nueva propiedad
   props?: {
     locked?: boolean;
     [key: string]: any;
@@ -174,8 +175,10 @@ export default function CanvasEditor({
           y,
           width: widthRel,
           height: heightRel,
+          zIndex: 0,  // Valor inicial de zIndex
           props: defaultProps(item.tipo, height),
         };
+
 
         onChange(tabId, (prev) => [...prev, nuevo]);
       },
@@ -202,6 +205,71 @@ const move = (id: string, x: number, y: number, w?: number, h?: number) =>
         : e
     )
   );
+
+const moveForward = (id: string) => {
+  onChange(tabId, (prev) => {
+    const updated = [...prev];
+    const element = updated.find((el) => el.id === id);
+    if (element) {
+      element.zIndex += 1;
+    }
+    updated.sort((a, b) => a.zIndex - b.zIndex); // Reordenar los elementos por zIndex
+    return updated;
+  });
+};
+
+const moveBackward = (id: string) => {
+  onChange(tabId, (prev) => {
+    const updated = [...prev];
+    const element = updated.find((el) => el.id === id);
+    if (element) {
+      element.zIndex -= 1;
+    }
+    updated.sort((a, b) => a.zIndex - b.zIndex); // Reordenar los elementos por zIndex
+    return updated;
+  });
+};
+
+const handleContextMenu = (e: React.MouseEvent, id: string) => {
+  e.preventDefault();  // Prevenir el menú por defecto
+
+  // Mostrar las opciones del menú
+  const menu = document.createElement('div');
+  menu.style.position = 'absolute';
+  menu.style.top = `${e.clientY}px`;
+  menu.style.left = `${e.clientX}px`;
+  menu.style.backgroundColor = 'white';
+  menu.style.border = '1px solid #ccc';
+  menu.style.padding = '10px';
+  menu.style.zIndex = '1000';
+
+  const moveForwardButton = document.createElement('div');
+  moveForwardButton.innerText = 'Mover adelante';
+  moveForwardButton.style.cursor = 'pointer';
+  moveForwardButton.onclick = () => {
+    moveForward(id);
+    document.body.removeChild(menu);  // Cerrar el menú después de hacer clic
+  };
+
+  const moveBackwardButton = document.createElement('div');
+  moveBackwardButton.innerText = 'Mover atrás';
+  moveBackwardButton.style.cursor = 'pointer';
+  moveBackwardButton.onclick = () => {
+    moveBackward(id);
+    document.body.removeChild(menu);  // Cerrar el menú después de hacer clic
+  };
+
+  menu.appendChild(moveForwardButton);
+  menu.appendChild(moveBackwardButton);
+  document.body.appendChild(menu);
+
+  // Eliminar el menú cuando se haga clic en otro lugar
+  const handleClickOutside = () => {
+    document.body.removeChild(menu);
+    document.removeEventListener('click', handleClickOutside);
+  };
+  document.addEventListener('click', handleClickOutside);
+};
 
 
   const renderContenido = (el: Elemento) => {
@@ -315,6 +383,7 @@ const move = (id: string, x: number, y: number, w?: number, h?: number) =>
                 move(el.id, pos.x, pos.y, ref.offsetWidth, ref.offsetHeight)
               }
               onClick={() => onSelect?.(el.id)}
+              onContextMenu={(e: React.MouseEvent) => handleContextMenu(e, el.id)}  // Aquí definimos el tipo de 'e' como React.MouseEvent
               style={{
                 border:
                   el.id === selectedElementId
