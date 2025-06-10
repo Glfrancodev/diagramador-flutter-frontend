@@ -250,7 +250,7 @@ if (elemento.tipo === 'Tabla') {
             newHeaders.length = n;
 
             const newWidths = [...(elemento.props?.colWidths || [])];
-            while (newWidths.length < n) newWidths.push(120);
+            while (newWidths.length < n) newWidths.push(0.10);
             newWidths.length = n;
 
             onUpdate((el) => ({
@@ -968,6 +968,41 @@ if (elemento.tipo === 'BottomNavbar') {
         />
       </label>
 
+      {/* Color activo */}
+      <label style={{ display: 'block', margin: '12px 0 6px 0' }}>
+        Color activo:
+        <input
+          type="color"
+          value={elemento.props?.colorActivo || '#2563eb'}
+          onChange={(e) => set({ colorActivo: e.target.value })}
+          style={{ width: '100%', marginTop: 4 }}
+        />
+      </label>
+
+      {/* Color inactivo */}
+      <label style={{ display: 'block', margin: '12px 0 6px 0' }}>
+        Color inactivo:
+        <input
+          type="color"
+          value={elemento.props?.colorInactivo || '#666'}
+          onChange={(e) => set({ colorInactivo: e.target.value })}
+          style={{ width: '100%', marginTop: 4 }}
+        />
+      </label>
+
+      {/* Border Radius */}
+      <label style={{ display: 'block', margin: '12px 0 6px 0' }}>
+        Border Radius:
+        <input
+          type="number"
+          min={0}
+          max={50}
+          value={elemento.props?.borderRadius || 0}
+          onChange={(e) => set({ borderRadius: Number(e.target.value) })}
+          style={{ width: '100%', marginTop: 4 }}
+        />
+      </label>
+
       {/* Pestañas */}
       <label style={{ display: 'block', margin: '12px 0 6px 0' }}>Pestañas:</label>
 
@@ -1059,7 +1094,8 @@ if (elemento.tipo === 'BottomNavbar') {
   );
 }
 
-if (elemento.tipo === 'Cuadrado' || elemento.tipo === 'Circulo' || elemento.tipo === 'Linea' || elemento.tipo === 'Semicirculo' || elemento.tipo === 'Triangulo' || elemento.tipo === 'Rombo') {
+
+if (elemento.tipo === 'Cuadrado' || elemento.tipo === 'Circulo') {
   return (
     <div style={{ padding: 10 }}>
       <h4>{elemento.tipo}</h4>

@@ -101,6 +101,30 @@ export default function Diagramador() {
     }
   };
 
+const exportarProyecto = async () => {
+  try {
+    const { data } = await axiosInstance.get(`/proyectos/${projectId}/exportar-flutter`, {
+      responseType: 'blob',
+    });
+
+
+    const blob = new Blob([data], { type: 'application/zip' });
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `${nombreProyecto || 'exportacion'}.zip`;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    window.URL.revokeObjectURL(url);
+
+  } catch (error) {
+    console.error("Error al exportar proyecto", error);
+    alert("Ocurrió un error al exportar el proyecto.");
+  }
+};
+
+
   const zoomIn = () => setZoom((z) => Math.min(z + 0.1, 2));
   const zoomOut = () => setZoom((z) => Math.max(z - 0.1, 0.5));
   const resetZoom = () => setZoom(0.85);
@@ -212,41 +236,54 @@ export default function Diagramador() {
 
   return (
     <DndProvider backend={HTML5Backend}>
-      {/* Barra superior */}
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          padding: 8,
-          background: "#1f2937",
-          color: "#fff",
-        }}
-      >
-        <button
-          onClick={() => navigate("/dashboard")}
-          style={{
-            marginRight: 12,
-            padding: "6px 10px",
-            background: "#2563eb",
-            border: "none",
-            borderRadius: 6,
-            color: "#fff",
-            cursor: "pointer",
-          }}
-        >
-          ← Volver
-        </button>
-        <h2 style={{ margin: 0 }}>{nombreProyecto || "Proyecto"}</h2>
-        <span
-          style={{
-            marginLeft: "auto",
-            marginRight: 12,
-            color: isSaving ? "#fbbf24" : "#10b981",
-          }}
-        >
-          {isSaving ? "Guardando…" : "Guardado"}
-        </span>
-      </div>
+<div
+  style={{
+    display: "flex",
+    alignItems: "center",
+    padding: 8,
+    background: "#1f2937",
+    color: "#fff",
+  }}
+>
+  <button
+    onClick={() => navigate("/dashboard")}
+    style={{
+      marginRight: 12,
+      padding: "6px 10px",
+      background: "#2563eb",
+      border: "none",
+      borderRadius: 6,
+      color: "#fff",
+      cursor: "pointer",
+    }}
+  >
+    ← Volver
+  </button>
+
+  <h2 style={{ margin: 0 }}>{nombreProyecto || "Proyecto"}</h2>
+
+  <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 12 }}>
+    <span style={{ color: isSaving ? "#fbbf24" : "#10b981" }}>
+      {isSaving ? "Guardando…" : "Guardado"}
+    </span>
+
+    <button
+      onClick={exportarProyecto}
+      style={{
+        background: "#10b981",
+        color: "#fff",
+        border: "none",
+        borderRadius: 6,
+        padding: "6px 12px",
+        cursor: "pointer",
+      }}
+    >
+      Exportar
+    </button>
+  </div>
+</div>
+
+
 
       {/* Cuerpo */}
       <div

@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const axiosInstance = axios.create({
-  baseURL: "http://localhost:3000/api", // ← cambia si tu API usa otra URL
+  baseURL: import.meta.env.VITE_API_URL, // ← cambia si tu API usa otra URL
 });
 
 // ⬇️ inyecta automáticamente el Bearer token

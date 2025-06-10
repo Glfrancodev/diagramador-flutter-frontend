@@ -8,7 +8,7 @@ type Props = {
 
 const ImagenComp: React.FC<Props> = ({ idArchivo, zoom, borderRadius = 0 }) => {
   const src = idArchivo
-    ? `http://localhost:3000/api/archivos/${idArchivo}/descargar`
+    ? `${import.meta.env.VITE_API_URL}/archivos/${idArchivo}/descargar`
     : null;
 
   return (

@@ -14,7 +14,6 @@ import AudioComp from './AudioComp';
 import BottomNavbarComp from './BottomNavbarComp';
 import CuadradoComp from './CuadradoComp';
 import CirculoComp from './CirculoComp';
-import LineaComp from './LineaComp';
 
 export const REGISTRY: Record<string, React.FC<any>> = {
   Selector: SelectorComp,
@@ -32,5 +31,4 @@ export const REGISTRY: Record<string, React.FC<any>> = {
   BottomNavbar: BottomNavbarComp,
   Cuadrado: CuadradoComp,
   Circulo: CirculoComp,
-  Linea: LineaComp,
 };

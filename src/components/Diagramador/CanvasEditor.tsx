@@ -122,7 +122,7 @@ if (tipo === 'BottomNavbar') {
   };
 }
 
-  if (tipo === 'Cuadrado' || tipo === 'Circulo' || tipo === 'Linea' || tipo === 'Semicirculo' || tipo === 'Triangulo' || tipo === 'Rombo') {
+  if (tipo === 'Cuadrado' || tipo === 'Circulo') {
     return {
       color: '#000000',
       size: px(100), // Tamaño por defecto

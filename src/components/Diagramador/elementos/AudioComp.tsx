@@ -15,7 +15,7 @@ const AudioComp: React.FC<Props> = ({
   modoPodcast = false,
 }) => {
   const src = idArchivo
-    ? `http://localhost:3000/api/archivos/${idArchivo}/descargar`
+    ? `${import.meta.env.VITE_API_URL}/archivos/${idArchivo}/descargar`
     : null;
 
   const ref = useRef<HTMLAudioElement | null>(null);
