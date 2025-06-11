@@ -96,6 +96,7 @@ if (tipo === 'Tabla') {
       visible: true,
       fontSize: px(14),     // ✅ ya estaba
       bgColor: '#1f2937',   // ✅ nuevo
+      itemBgColor : '#374151',
       textColor: '#ffffff', // ✅ nuevo
     };
   }
