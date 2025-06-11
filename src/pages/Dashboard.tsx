@@ -64,6 +64,11 @@ export default function Dashboard() {
       handleLogout();
     }
   };
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [iaNombre, setIaNombre] = useState("");
+  const [iaDescripcion, setIaDescripcion] = useState("");
+  const [iaPrompt, setIaPrompt] = useState("");
+  const [generando, setGenerando] = useState(false);
 
   /* ---------- helpers ---------- */
   const handleLogout = () => {
@@ -76,6 +81,33 @@ export default function Dashboard() {
     navigate(`/proyecto/${id}`);
   };
 
+const generarConIA = async () => {
+  if (!iaNombre.trim() || !iaPrompt.trim() || !iaDescripcion.trim()) {
+    alert("Todos los campos son obligatorios.");
+    return;
+  }
+
+  try {
+    setGenerando(true);
+    const response = await axiosInstance.post(`/proyectos/generar-desde-prompt`, {
+      titulo: iaNombre.trim(),
+      descripcion: iaDescripcion.trim(),
+      prompt: iaPrompt.trim(),
+    });
+
+    await cargarDatos(); // recarga sin redireccionar
+  } catch (error: any) {
+    console.error("Error generando proyecto IA", error);
+    console.error("Respuesta del backend:", error.response?.data); // 🔥 Esta línea es clave
+    alert("Error al generar proyecto con IA");
+  } finally {
+    setGenerando(false);
+    setIsModalOpen(false);
+  }
+};
+
+
+  
   /* ---------- CRUD proyecto ---------- */
   const crearProyecto = async () => {
     if (!nuevoNombre.trim()) return alert("El nombre es obligatorio");
@@ -172,6 +204,13 @@ export default function Dashboard() {
             <div className="flex gap-2">
               {/* importar desde imagen */}
               <button
+                onClick={() => setIsModalOpen(true)}
+                className="p-1.5 bg-teal-500 hover:bg-teal-600 text-white rounded-full shadow"
+                title="Generar por prompt"
+              >
+                Prompt
+              </button>
+              <button
                 onClick={() => setModalFoto(true)}
                 className="p-1.5 bg-orange-500 hover:bg-orange-600 text-white rounded-full shadow"
                 title="Importar desde imagen"
@@ -264,6 +303,83 @@ export default function Dashboard() {
           </div>
         </Modal>
       )}
+{isModalOpen && (
+  <Modal title="Generar proyecto con IA" onClose={() => !generando && setIsModalOpen(false)}>
+    <div className="space-y-4 opacity-100 relative">
+      <input
+        className="w-full p-2 border rounded dark:bg-gray-800 dark:border-gray-700"
+        placeholder="Título del proyecto"
+        value={iaNombre}
+        onChange={(e) => setIaNombre(e.target.value)}
+        disabled={generando}
+      />
+      <textarea
+        className="w-full p-2 border rounded dark:bg-gray-800 dark:border-gray-700"
+        placeholder="Descripción"
+        value={iaDescripcion}
+        onChange={(e) => setIaDescripcion(e.target.value)}
+        disabled={generando}
+      />
+      <textarea
+        className="w-full p-2 border rounded dark:bg-gray-800 dark:border-gray-700"
+        placeholder="Prompt"
+        rows={4}
+        value={iaPrompt}
+        onChange={(e) => setIaPrompt(e.target.value)}
+        disabled={generando}
+      />
+
+      <div className="flex justify-end gap-3 flex-wrap">
+        <Button
+          outline
+          onClick={() => setIsModalOpen(false)}
+          disabled={generando}
+        >
+          Cancelar
+        </Button>
+        <Button
+          onClick={generarConIA}
+          disabled={generando || !iaNombre.trim() || !iaPrompt.trim()}
+        >
+          {generando ? "Generando..." : "Generar"}
+        </Button>
+      </div>
+
+{generando && (
+  <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
+    <div className="flex flex-col items-center justify-center gap-6">
+      <svg
+        className="animate-spin h-16 w-16 text-white"
+        xmlns="http://www.w3.org/2000/svg"
+        fill="none"
+        viewBox="0 0 30 30"
+      >
+        <circle
+          className="opacity-25"
+          cx="15"
+          cy="15"
+          r="12"
+          stroke="currentColor"
+          strokeWidth="4"
+        ></circle>
+        <path
+          className="opacity-75"
+          fill="currentColor"
+          d="M4 15a11 11 0 0111-11v11H4z"
+        ></path>
+      </svg>
+      <p className="text-white text-lg font-semibold tracking-wide">
+        Generando...
+      </p>
+    </div>
+  </div>
+)}
+
+
+    </div>
+  </Modal>
+)}
+
 
       {/* Editar proyecto */}
       {modalEditar && (

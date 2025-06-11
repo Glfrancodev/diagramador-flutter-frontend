@@ -901,6 +901,81 @@ if (elemento.tipo === 'Audio') {
     </div>
   );
 }
+
+/* ------------------- PÁRRAFO ------------------- */
+if (elemento.tipo === 'Parrafo') {
+  return (
+    <div style={{ padding: 10 }}>
+      <h4>Párrafo</h4>
+
+      <label style={{ display: 'block', marginBottom: 6 }}>
+        Texto:
+        <textarea
+          value={elemento.props?.texto || ''}
+          onChange={(e) => set({ texto: e.target.value })}
+          style={{
+            width: '100%',
+            height: 100,
+            marginTop: 4,
+            resize: 'vertical',
+          }}
+        />
+      </label>
+
+      <label style={{ display: 'block', marginBottom: 6 }}>
+        Tamaño de texto (px):
+        <input
+          type="number"
+          min={8}
+          max={72}
+          value={relToPx(elemento.props?.fontSize ?? 0.02)} // ✅ muestra en px reales
+          onChange={(e) =>
+            set({ fontSize: pxToRel(Number(e.target.value) || 14) }) // ✅ guarda como valor proporcional
+          }
+          style={{ width: '100%', marginTop: 4 }}
+        />
+      </label>
+
+      <label style={{ display: 'block', marginBottom: 6 }}>
+        Color del texto:
+        <input
+          type="color"
+          value={elemento.props?.color || '#000000'}
+          onChange={(e) => set({ color: e.target.value })}
+          style={{ width: '100%', marginTop: 4 }}
+        />
+      </label>
+
+      <label style={{ display: 'block', marginBottom: 6 }}>
+        Alineación:
+        <select
+          value={elemento.props?.align || 'left'}
+          onChange={(e) => set({ align: e.target.value })}
+          style={{ width: '100%', marginTop: 4 }}
+        >
+          <option value="left">Izquierda</option>
+          <option value="center">Centro</option>
+          <option value="right">Derecha</option>
+          <option value="justify">Justificado</option>
+        </select>
+      </label>
+
+      <label style={{ display: 'block', marginBottom: 6 }}>
+        Negrita:
+        <input
+          type="checkbox"
+          checked={elemento.props?.bold || false}
+          onChange={(e) => set({ bold: e.target.checked })}
+          style={{ marginLeft: 8 }}
+        />
+      </label>
+
+      {bloqueBase}
+    </div>
+  );
+}
+
+
 /* ------------------- BOTTOM NAVBAR ------------------- */
 if (elemento.tipo === 'BottomNavbar') {
   const lista = elemento.props?.items || [];
@@ -1121,6 +1196,43 @@ if (elemento.tipo === 'Cuadrado' || elemento.tipo === 'Circulo') {
           style={{ width: '100%', marginTop: 4 }}
         />
       </label>
+<label style={{ display: 'block', marginBottom: 6 }}>
+  Radio del borde (px):
+  <input
+    type="number"
+    min={0}
+    max={100}
+    value={elemento.props?.borderRadius ?? 0}
+    onChange={(e) => set({ borderRadius: Number(e.target.value) || 0 })}
+    style={{ width: '100%', marginTop: 4 }}
+  />
+</label>
+
+<div style={{ marginTop: 10, marginBottom: 6 }}>
+  <span style={{ fontWeight: 'bold' }}>Esquinas redondeadas:</span>
+  {['topLeft', 'topRight', 'bottomLeft', 'bottomRight'].map((corner) => (
+    <label key={corner} style={{ display: 'block', marginLeft: 8 }}>
+      <input
+        type="checkbox"
+        checked={elemento.props?.borderCorners?.[corner] ?? false}
+        onChange={(e) =>
+          set({
+            borderCorners: {
+              ...elemento.props?.borderCorners,
+              [corner]: e.target.checked,
+            },
+          })
+        }
+      />
+      {' '}
+      {corner === 'topLeft' && 'Superior Izquierda'}
+      {corner === 'topRight' && 'Superior Derecha'}
+      {corner === 'bottomLeft' && 'Inferior Izquierda'}
+      {corner === 'bottomRight' && 'Inferior Derecha'}
+    </label>
+  ))}
+</div>
+
 
       {bloqueBase}
     </div>

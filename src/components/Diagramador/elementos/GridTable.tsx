@@ -66,6 +66,10 @@ const GridTable: React.FC<Props> = ({
     window.addEventListener('mouseup', onUp, { once: true });
   };
 
+  if (!Array.isArray(headers) || !Array.isArray(data) || !Array.isArray(colWidths)) {
+    return <div>Error: La tabla está mal configurada.</div>;
+  }
+
   return (
     <div
       style={{
@@ -87,7 +91,7 @@ const GridTable: React.FC<Props> = ({
             <div
               className="cell header-cell"
               key={i}
-              style={{ width: getAbsWidth(colWidths[i]) }}
+              style={{ width: getAbsWidth(colWidths[i] || 0.2) }}
             >
               <div
                 className="content"
@@ -117,40 +121,46 @@ const GridTable: React.FC<Props> = ({
         </div>
 
         {/* FILAS */}
-        {data.map((fila, r) => (
-          <div className="row" key={r}>
-            {fila.map((cel, c) => (
-              <div
-                className="cell"
-                key={c}
-                style={{ width: getAbsWidth(colWidths[c]) }}
-              >
-                <div
-                  className="content"
-                  onDoubleClick={(e) => {
-                    const el = e.currentTarget;
-                    const input = document.createElement('input');
-                    input.value = cel;
-                    input.style.width = '100%';
-                    input.style.border = 'none';
-                    input.style.background = 'transparent';
-                    input.style.fontSize = 'inherit';
-                    el.innerHTML = '';
-                    el.appendChild(input);
-                    input.focus();
-                    const save = () => editCell(r, c, input.value);
-                    input.onblur = save;
-                    input.onkeydown = (ev) => {
-                      if (ev.key === 'Enter' || ev.key === 'Escape') save();
-                    };
-                  }}
-                >
-                  {cel || '...'}
-                </div>
-              </div>
-            ))}
-          </div>
-        ))}
+        {Array.isArray(data) && data.length > 0 ? (
+          data.map((fila, r) => (
+            <div className="row" key={r}>
+              {Array.isArray(fila)
+                ? fila.map((cel, c) => (
+                    <div
+                      className="cell"
+                      key={c}
+                      style={{ width: getAbsWidth(colWidths[c] || 0.2) }}
+                    >
+                      <div
+                        className="content"
+                        onDoubleClick={(e) => {
+                          const el = e.currentTarget;
+                          const input = document.createElement('input');
+                          input.value = cel;
+                          input.style.width = '100%';
+                          input.style.border = 'none';
+                          input.style.background = 'transparent';
+                          input.style.fontSize = 'inherit';
+                          el.innerHTML = '';
+                          el.appendChild(input);
+                          input.focus();
+                          const save = () => editCell(r, c, input.value);
+                          input.onblur = save;
+                          input.onkeydown = (ev) => {
+                            if (ev.key === 'Enter' || ev.key === 'Escape') save();
+                          };
+                        }}
+                      >
+                        {cel || '...'}
+                      </div>
+                    </div>
+                  ))
+                : null}
+            </div>
+          ))
+        ) : (
+          <div style={{ padding: 10, color: '#999' }}>No hay datos para mostrar.</div>
+        )}
       </div>
     </div>
   );

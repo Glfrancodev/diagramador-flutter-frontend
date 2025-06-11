@@ -6,6 +6,7 @@ const CATEGORIAS = [
     nombre: "Básicos",
     componentes: [
       { tipo: "Label", label: "Etiqueta" },
+      { tipo: "Parrafo", label: "Parrafo" },
       { tipo: "InputBox", label: "Campo de texto" },
       { tipo: "InputFecha", label: "Fecha" },
       { tipo: "Selector", label: "Selector" },

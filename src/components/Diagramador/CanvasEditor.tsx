@@ -46,6 +46,15 @@ const defaultProps = (tipo: string, canvasHeight: number) => {
         borderRadius: 0,
       };
     }
+if (tipo === 'Parrafo') {
+  return {
+    texto: 'Texto de párrafo...',
+    fontSize: px(16),
+    color: '#333333',
+    alineacion: 'left', // puede ser 'left', 'center', 'right', 'justify'
+    bold: false,
+  };
+}
 
     if (tipo === 'Label') {
     return {
@@ -123,10 +132,24 @@ if (tipo === 'BottomNavbar') {
   };
 }
 
-  if (tipo === 'Cuadrado' || tipo === 'Circulo') {
+  if (tipo === 'Cuadrado') {
     return {
       color: '#000000',
-      size: px(100), // Tamaño por defecto
+      size: px(100), // Tamaño por defectoç
+      borderRadius: 0,
+      borderCorners: {
+      topLeft: true,
+      topRight: true,
+      bottomLeft: true,
+      bottomRight: true,
+    },
+    };
+  }
+
+    if (tipo === 'Circulo') {
+    return {
+      color: '#000000',
+      size: px(100), // Tamaño por defectoç
     };
   }
 

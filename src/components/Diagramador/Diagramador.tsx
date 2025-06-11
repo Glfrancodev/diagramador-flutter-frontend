@@ -120,8 +120,6 @@ const exportarProyecto = async () => {
     const { data } = await axiosInstance.get(`/proyectos/${projectId}/exportar-flutter`, {
       responseType: 'blob',
     });
-
-
     const blob = new Blob([data], { type: 'application/zip' });
     const url = window.URL.createObjectURL(blob);
     const link = document.createElement("a");
