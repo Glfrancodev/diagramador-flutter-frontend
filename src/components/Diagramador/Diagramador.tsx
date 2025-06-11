@@ -80,11 +80,23 @@ export default function Diagramador() {
     fetchData();
   }, [projectId, navigate]);
 
-  useEffect(() => {
-    if (!projectId) return;
-    const interval = setInterval(() => guardarProyecto(), 10_000);
-    return () => clearInterval(interval);
-  }, [projectId]);
+const intervalRef = useRef<NodeJS.Timeout | null>(null);
+
+useEffect(() => {
+  if (!projectId || intervalRef.current) return;
+
+  intervalRef.current = setInterval(() => {
+    guardarProyecto();
+  }, 10000); // cada 10 segundos
+
+  return () => {
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
+    }
+  };
+}, [projectId]);
+
 
   const guardarProyecto = async () => {
     try {
@@ -103,6 +115,8 @@ export default function Diagramador() {
 
 const exportarProyecto = async () => {
   try {
+    await guardarProyecto();  // 👈 forzamos un guardado antes
+    await new Promise((res) => setTimeout(res, 300)); // 👈 pausa de 300ms
     const { data } = await axiosInstance.get(`/proyectos/${projectId}/exportar-flutter`, {
       responseType: 'blob',
     });
