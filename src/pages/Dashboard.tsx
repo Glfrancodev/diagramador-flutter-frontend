@@ -106,6 +106,32 @@ const generarConIA = async () => {
   }
 };
 
+const generarDesdeImagen = async () => {
+  if (!iaNombre.trim() || !iaDescripcion.trim() || !foto) {
+    alert("Todos los campos son obligatorios.");
+    return;
+  }
+
+  try {
+    setGenerando(true);
+    const formData = new FormData();
+    formData.append("imagen", foto);
+    formData.append("nombre", iaNombre.trim());
+    formData.append("descripcion", iaDescripcion.trim());
+
+    const response = await axiosInstance.post("/proyectos/importar-boceto", formData);
+
+    await cargarDatos(); // recarga proyectos
+  } catch (error: any) {
+    console.error("Error generando desde imagen", error);
+    console.error("Respuesta del backend:", error.response?.data);
+    alert("Error al generar proyecto desde imagen");
+  } finally {
+    setGenerando(false);
+    setModalFoto(false);
+    setFoto(null);
+  }
+};
 
   
   /* ---------- CRUD proyecto ---------- */
@@ -405,98 +431,79 @@ const generarConIA = async () => {
 
       {/* Importar imagen */}
       {modalFoto && (
-        <Modal title="Importar imagen de boceto" onClose={() => setModalFoto(false)}>
-          {!resultadoFoto ? (
-            <>
-              <input
-                type="file"
-                accept="image/png,image/jpeg"
-                onChange={(e) => setFoto(e.target.files?.[0] || null)}
-                className="w-full mb-4"
-              />
-              <Button
-                onClick={async () => {
-                  if (!foto) return alert("Selecciona una imagen PNG o JPG");
-                  const formData = new FormData();
-                  formData.append("imagen", foto);
-                  try {
-                    const { data } = await axiosInstance.post("/proyectos/importar-boceto", formData);
-                    setResultadoFoto(data.estructura);
-                    const inicial: Record<string,string> = {};
-                    data.estructura.clases.forEach((c: any) => {
-                      const primerAttr = c.atributos?.[0]?.nombre || "";
-                      if (primerAttr) inicial[c.nombre] = primerAttr;
-                    });
-                    setClavesFoto(inicial);
-                    setRelaciones(data.estructura.relaciones || []);
-                  } catch {
-                    alert("Error al analizar imagen");
-                  }
-                }}
-              >
-                Analizar foto
-              </Button>
-            </>
-          ) : (
-            <>
-              <p className="font-semibold mb-2">Selecciona la clave primaria de cada clase:</p>
-              <div className="space-y-3 mb-4 max-h-[300px] overflow-y-auto">
-                {resultadoFoto.clases.map((clase: any) => (
-                  <div key={clase.nombre}>
-                    <label className="font-medium">{clase.nombre}</label>
-                    <select
-                      className="w-full p-2 border rounded dark:bg-gray-800 dark:border-gray-600"
-                      value={clavesFoto[clase.nombre]}
-                      onChange={(e) =>
-                        setClavesFoto({ ...clavesFoto, [clase.nombre]: e.target.value })
-                      }
-                    >
-                      {clase.atributos.map((attr: any) => (
-                        <option key={attr.nombre} value={attr.nombre}>{attr.nombre}</option>
-                      ))}
-                    </select>
-                  </div>
-                ))}
-              </div>
-              <div className="flex justify-end gap-3 flex-wrap">
-                <Button outline onClick={() => setModalFoto(false)}>Cancelar</Button>
-                <Button
-                  onClick={async () => {
-                    try {
-                      const resp = await axiosInstance.post(
-                        "/proyectos/exportar-crud-simulado",
-                        {
-                          clases: resultadoFoto.clases,
-                          llavesPrimarias: clavesFoto,
-                          relaciones,
-                        },
-                        { responseType: "blob" }
-                      );
-                      const blob = new Blob([resp.data], { type: "application/zip" });
-                      const url = URL.createObjectURL(blob);
-                      const a = document.createElement("a");
-                      a.href = url;
-                      a.download = "proyectoAngular.zip";
-                      a.click();
-                      URL.revokeObjectURL(url);
-                      // limpia
-                      setModalFoto(false);
-                      setResultadoFoto(null);
-                      setFoto(null);
-                      setClavesFoto({});
-                      setRelaciones([]);
-                    } catch {
-                      alert("Error al exportar proyecto");
-                    }
-                  }}
-                >
-                  Exportar proyecto Angular
-                </Button>
-              </div>
-            </>
-          )}
-        </Modal>
+  <Modal title="Importar desde imagen" onClose={() => !generando && setModalFoto(false)}>
+    <div className="space-y-4 opacity-100 relative">
+      <input
+        className="w-full p-2 border rounded dark:bg-gray-800 dark:border-gray-700"
+        placeholder="Título del proyecto"
+        value={iaNombre}
+        onChange={(e) => setIaNombre(e.target.value)}
+        disabled={generando}
+      />
+      <textarea
+        className="w-full p-2 border rounded dark:bg-gray-800 dark:border-gray-700"
+        placeholder="Descripción"
+        value={iaDescripcion}
+        onChange={(e) => setIaDescripcion(e.target.value)}
+        disabled={generando}
+      />
+      <input
+        type="file"
+        accept="image/png,image/jpeg"
+        onChange={(e) => setFoto(e.target.files?.[0] || null)}
+        className="w-full"
+        disabled={generando}
+      />
+
+      <div className="flex justify-end gap-3 flex-wrap">
+        <Button
+          outline
+          onClick={() => setModalFoto(false)}
+          disabled={generando}
+        >
+          Cancelar
+        </Button>
+        <Button
+          onClick={generarDesdeImagen}
+          disabled={generando || !iaNombre.trim() || !iaDescripcion.trim() || !foto}
+        >
+          {generando ? "Generando..." : "Generar"}
+        </Button>
+      </div>
+
+      {generando && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="flex flex-col items-center justify-center gap-6">
+            <svg
+              className="animate-spin h-16 w-16 text-white"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 30 30"
+            >
+              <circle
+                className="opacity-25"
+                cx="15"
+                cy="15"
+                r="12"
+                stroke="currentColor"
+                strokeWidth="4"
+              ></circle>
+              <path
+                className="opacity-75"
+                fill="currentColor"
+                d="M4 15a11 11 0 0111-11v11H4z"
+              ></path>
+            </svg>
+            <p className="text-white text-lg font-semibold tracking-wide">
+              Generando...
+            </p>
+          </div>
+        </div>
       )}
+    </div>
+  </Modal>
+)}
+
 
       {/* Invitaciones */}
       {modalInv && (
