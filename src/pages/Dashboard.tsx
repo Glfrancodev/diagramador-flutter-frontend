@@ -23,7 +23,6 @@ export default function Dashboard() {
   const [perfil,            setPerfil]            = useState<any>(null);
   const [misProyectos,      setMisProyectos]      = useState<any[]>([]);
   const [compartidos,       setCompartidos]       = useState<any[]>([]);
-  const [relaciones,        setRelaciones]        = useState<any[]>([]);
 
   const [showMis,           setShowMis]           = useState(true);
   const [showCompartidos,   setShowCompartidos]   = useState(true);
@@ -41,8 +40,6 @@ export default function Dashboard() {
 
   // importar foto
   const [foto,              setFoto]              = useState<File | null>(null);
-  const [resultadoFoto,     setResultadoFoto]     = useState<any>(null);
-  const [clavesFoto,        setClavesFoto]        = useState<Record<string,string>>({});
 
   // invitaciones
   const [invPendientes,     setInvPendientes]     = useState<any[]>([]);
@@ -71,10 +68,14 @@ export default function Dashboard() {
   const [generando, setGenerando] = useState(false);
 
   /* ---------- helpers ---------- */
-  const handleLogout = () => {
-    localStorage.removeItem("correo");
-    logout();
-  };
+const handleLogout = () => {
+  localStorage.removeItem("nombre");
+  localStorage.removeItem("token"); // 🔥 elimina el token JWT
+  localStorage.removeItem("idProyecto"); // (opcional si lo guardás)
+  logout(); // ejecuta lógica interna del contexto
+  navigate("/"); // 🔁 redirige explícitamente al login
+};
+
 
   const irAlProyecto = (id: string | number) => {
     localStorage.setItem("idProyecto", id.toString());
