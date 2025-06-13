@@ -1,23 +1,31 @@
-// src/hooks/useOnlineStatus.ts
 import { useEffect, useState } from 'react';
 
-export default function useOnlineStatus() {
+export default function useOnlineStatus(): boolean {
   const [online, setOnline] = useState(navigator.onLine);
 
-useEffect(() => {
-  console.log("🧪 Hook cargado. Estado inicial:", navigator.onLine);
-  const update = () => {
-    console.log("📡 Evento detectado. Ahora:", navigator.onLine);
-    setOnline(navigator.onLine);
-  };
-  window.addEventListener("online", update);
-  window.addEventListener("offline", update);
-  return () => {
-    window.removeEventListener("online", update);
-    window.removeEventListener("offline", update);
-  };
-}, []);
+  useEffect(() => {
+    const updateStatus = () => setOnline(navigator.onLine);
 
+    window.addEventListener('online', updateStatus);
+    window.addEventListener('offline', updateStatus);
+
+    // Verificación activa cada 10s
+    const interval = setInterval(async () => {
+      try {
+        // Hacé ping a tu backend (o cualquier URL que responda rápido)
+        await fetch('/ping', { method: 'GET', cache: 'no-store' });
+        setOnline(true);
+      } catch {
+        setOnline(false);
+      }
+    }, 10000); // cada 10s
+
+    return () => {
+      window.removeEventListener('online', updateStatus);
+      window.removeEventListener('offline', updateStatus);
+      clearInterval(interval);
+    };
+  }, []);
 
   return online;
 }
