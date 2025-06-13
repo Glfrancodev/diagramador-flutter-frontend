@@ -13,7 +13,11 @@ export default function useOnlineStatus(): boolean {
     const interval = setInterval(async () => {
       try {
         // Hacé ping a tu backend (o cualquier URL que responda rápido)
-        await fetch('/ping', { method: 'GET', cache: 'no-store' });
+        await fetch(import.meta.env.VITE_API_URL.replace('/api', '') + '/ping', {
+        method: 'GET',
+        cache: 'no-store',
+        });
+
         setOnline(true);
       } catch {
         setOnline(false);
