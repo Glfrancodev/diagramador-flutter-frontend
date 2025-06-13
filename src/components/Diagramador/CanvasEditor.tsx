@@ -2,6 +2,16 @@
 import { useDrop } from 'react-dnd';
 import { Rnd } from 'react-rnd';
 import { REGISTRY } from './elementos/registry';
+function colorFromSocketId(id: string): string {
+  // Generador determinístico de color a partir de un string (hash simple)
+  let hash = 0;
+  for (let i = 0; i < id.length; i++) {
+    hash = id.charCodeAt(i) + ((hash << 5) - hash);
+  }
+
+  const hue = Math.abs(hash) % 360;
+  return `hsl(${hue}, 70%, 60%)`;
+}
 
 export type Elemento = {
   id: string;
@@ -16,7 +26,12 @@ export type Elemento = {
     [key: string]: any;
   };
 };
-
+type RemoteSel = {
+  socketId : string;
+  elementId: string | null;
+  name     : string;
+  color    : string;   // ← nuevo
+};
 type Props = {
   tabId: string;
   zoom: number;
@@ -26,6 +41,7 @@ type Props = {
   onChange: (tabId: string, up: (p: Elemento[]) => Elemento[]) => void;
   onSelect?: (id: string | null) => void;
   selectedElementId?: string | null;
+  remoteSelections: RemoteSel[];
 };
 
 const defaultProps = (tipo: string, canvasHeight: number) => {
@@ -165,6 +181,7 @@ export default function CanvasEditor({
   onChange,
   onSelect,
   selectedElementId,
+  remoteSelections,
 }: Props) {
   const canvasId = `canvas-area-${tabId}`;
 
@@ -385,45 +402,70 @@ const handleContextMenu = (e: React.MouseEvent, id: string) => {
           position: 'relative',
         }}
       >
-        {elementos.map((el) => {
+{elementos.map((el) => {
+  /* ─── 1. Comprobar si algún usuario remoto lo tiene seleccionado ─── */
+  const sel = remoteSelections.find((s) => s.elementId === el.id);
+  const remoteColor = sel?.color;
 
-          return (
-            <Rnd
-              key={el.id}
-              bounds="parent"
-              enableResizing
-              disableDragging={el.props?.locked === true}
-              size={{
-                width: el.width * width * zoom,
-                height: el.height * height * zoom,
-              }}
-              position={{
-                x: el.x * width * zoom,
-                y: el.y * height * zoom,
-              }}
-              dragCancel=".no-drag"
-              onDragStop={(_, d) => move(el.id, d.x, d.y)}
-              onResizeStop={(_, __, ref, ___, pos) =>
-                move(el.id, pos.x, pos.y, ref.offsetWidth, ref.offsetHeight)
-              }
-              onClick={() => onSelect?.(el.id)}
-              onContextMenu={(e: React.MouseEvent) => handleContextMenu(e, el.id)}  // Aquí definimos el tipo de 'e' como React.MouseEvent
-              style={{
-                border:
-                  el.id === selectedElementId
-                    ? '2px solid #2563eb'
-                    : '1px solid transparent',
-                borderRadius: 4,
-                boxSizing: 'border-box',
-                background: el.props?.locked ? '#f9fafb' : undefined,
-                cursor: el.props?.locked ? 'default' : 'move',
-              }}
-            >
-              {renderContenido(el)}
-            </Rnd>
-          );
+  return (
+    <Rnd
+      key={el.id}
+      bounds="parent"
+      enableResizing
+      disableDragging={el.props?.locked === true}
+      size={{
+        width : el.width  * width  * zoom,
+        height: el.height * height * zoom,
+      }}
+      position={{
+        x: el.x * width  * zoom,
+        y: el.y * height * zoom,
+      }}
+      dragCancel=".no-drag"
+      onDragStop={(_, d) => move(el.id, d.x, d.y)}
+      onResizeStop={(_, __, ref, ___, pos) =>
+        move(el.id, pos.x, pos.y, ref.offsetWidth, ref.offsetHeight)
+      }
+      onClick={() => onSelect?.(el.id)}
+      onContextMenu={(e: React.MouseEvent) => handleContextMenu(e, el.id)}
 
-        })}
+      style={{
+        border:
+          el.id === selectedElementId
+            ? '2px solid #2563eb'               // tu propia selección
+            : sel
+              ? `2px dashed ${remoteColor}`     // selección remota
+              : '1px solid transparent',
+        borderRadius : 4,
+        boxSizing    : 'border-box',
+        background   : el.props?.locked ? '#f9fafb' : undefined,
+        cursor       : el.props?.locked ? 'default' : 'move',
+      }}
+    >
+      {/* Etiqueta con el nombre del usuario remoto */}
+      {sel && (
+        <span style={{
+          position      : 'absolute',
+          top           : -4,
+          left          : 0,
+          transform     : 'translateY(-100%)',
+          background    : remoteColor,
+          color         : '#fff',
+          fontSize      : 10,
+          borderRadius  : 4,
+          padding       : '1px 4px',
+          pointerEvents : 'none',
+          whiteSpace    : 'nowrap',
+        }}>
+          {sel.name}
+        </span>
+      )}
+
+      {renderContenido(el)}
+    </Rnd>
+  );
+})}
+
       </div>
     </div>
   );
