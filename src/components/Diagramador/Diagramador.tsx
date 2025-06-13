@@ -450,20 +450,20 @@ useEffect(() => {
     if (showInvite) cargarInvitaciones();
   }, [showInvite]);
 
-  // useEffect(() => {
-  //   if (!projectId || intervalRef.current) return;
+  useEffect(() => {
+    if (!projectId || intervalRef.current) return;
 
-  //   intervalRef.current = setInterval(() => {
-  //     guardarProyecto();
-  //   }, 10000); // cada 10 segundos
+    intervalRef.current = setInterval(() => {
+      guardarProyecto();
+    }, 10000); // cada 10 segundos
 
-  //   return () => {
-  //     if (intervalRef.current) {
-  //       clearInterval(intervalRef.current);
-  //       intervalRef.current = null;
-  //     }
-  //   };
-  // }, [projectId]);
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+    };
+  }, [projectId]);
 
 
   const guardarProyecto = async () => {
