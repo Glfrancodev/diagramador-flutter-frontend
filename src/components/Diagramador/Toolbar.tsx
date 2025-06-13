@@ -2,6 +2,7 @@
 
 import { DEVICES } from "../../constants/devices";
 import type { DeviceKey } from "../../constants/devices";
+import useOnlineStatus from "../../hooks/useOnlineStatus";
 
 type Props = {
   zoomIn: () => void;
@@ -9,6 +10,7 @@ type Props = {
   resetZoom: () => void;
   selectedDevice: DeviceKey;
   onDeviceChange: (device: DeviceKey) => void;
+  online: boolean;
 };
 
 export default function Toolbar({
@@ -17,6 +19,7 @@ export default function Toolbar({
   resetZoom,
   selectedDevice,
   onDeviceChange,
+  online,
 }: Props) {
   return (
     <div
@@ -43,11 +46,25 @@ export default function Toolbar({
         </select>
       </label>
 
-      <div style={{ marginLeft: "auto" }}>
-        <button onClick={zoomIn}>➕</button>{" "}
-        <button onClick={zoomOut}>➖</button>{" "}
-        <button onClick={resetZoom}>🔄</button>
-      </div>
+<div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 12 }}>
+  <span
+    style={{
+      backgroundColor: online ? "#16a34a" : "#dc2626",
+      color: "white",
+      borderRadius: 6,
+      padding: "4px 8px",
+      fontWeight: "bold",
+      fontSize: 12,
+    }}
+  >
+    {online ? "🟢 Conectado" : "🔴 Sin conexión"}
+  </span>
+  <button onClick={zoomIn}>➕</button>
+  <button onClick={zoomOut}>➖</button>
+  <button onClick={resetZoom}>🔄</button>
+</div>
+
+
     </div>
   );
 }

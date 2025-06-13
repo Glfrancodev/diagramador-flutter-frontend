@@ -16,6 +16,11 @@ import axiosInstance from "../../services/axiosInstance";
 
 import { io } from "socket.io-client";
 
+
+
+import useOnlineStatus from "../../hooks/useOnlineStatus";
+
+
 export type Elemento = {
   id: string;
   tipo: string;
@@ -87,6 +92,7 @@ export default function Diagramador() {
   const socketRef = useRef<any>(null);
 
   const cursorTabsRef = useRef<{ [socketId: string]: string }>({});
+  const online = useOnlineStatus();
 
   //nueva implementación de cursores
   const selectedTabRef = useRef(selectedTabId);
@@ -102,6 +108,17 @@ export default function Diagramador() {
     const h = hash % 360;
     return `hsl(${h}, 80%, 70%)`;
   }
+useEffect(() => {
+  const update = () => {
+    console.log("🧪 Estado de conexión:", navigator.onLine ? "ONLINE" : "OFFLINE");
+  };
+  window.addEventListener("online", update);
+  window.addEventListener("offline", update);
+  return () => {
+    window.removeEventListener("online", update);
+    window.removeEventListener("offline", update);
+  };
+}, []);
 
   useEffect(() => {
     const scroll = scrollRef.current;
@@ -680,6 +697,7 @@ socket.on("selectElement", (data: RemoteSel & { projectId: string }) => {
           resetZoom={resetZoom}
           selectedDevice={_selectedDevice}
           onDeviceChange={setSelectedDevice}
+          online={online}
         />
 
         {/* Zona principal */}
