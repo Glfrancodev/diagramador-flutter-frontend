@@ -85,21 +85,25 @@ export default function Diagramador() {
   const tabsRef = useRef(tabs);
   const deviceRef = useRef<DeviceKey>("phoneStandard");
   useEffect(() => { tabsRef.current = tabs; }, [tabs]);
-  useEffect(() => {
-    if (!projectId) return;
+const [proyectoCargado, setProyectoCargado] = useState(false);
 
-    guardarProyectoOffline({
-      id: projectId,
-      nombre: nombreProyecto,
-      contenido: {
-        pestañas: tabs,
-        clases: [], // si no tenés clases aún, igual lo dejamos vacío
-        relaciones: [],
-        clavesPrimarias: {},
-      },
-      actualizadoEn: Date.now(), // este campo lo añade internamente en la función, así que se puede omitir
-    });
-  }, [tabs, nombreProyecto, projectId]);
+// Solo guardar local después de que cargó al menos una vez
+useEffect(() => {
+  if (!projectId || !proyectoCargado) return;
+
+  guardarProyectoOffline({
+    id: projectId,
+    nombre: nombreProyecto,
+    contenido: {
+      pestañas: tabs,
+      clases: [],
+      relaciones: [],
+      clavesPrimarias: {},
+    },
+    actualizadoEn: Date.now(),
+  });
+}, [tabs, nombreProyecto, projectId, proyectoCargado]);
+
 
   useEffect(() => { deviceRef.current = _selectedDevice; }, [_selectedDevice]);
 
@@ -263,6 +267,7 @@ useEffect(() => {
             setSelectedTabId(parsed.pestañas[0].id);
           }
         }
+        setProyectoCargado(true);
       } catch (e) {
         console.error("Error al cargar proyecto", e);
         alert("No se pudo cargar el proyecto");
