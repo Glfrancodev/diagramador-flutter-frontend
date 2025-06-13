@@ -22,6 +22,9 @@ import useOnlineStatus from "../../hooks/useOnlineStatus";
 import { guardarCambioOffline, guardarProyectoOffline } from "../../db/utils";
 import { db } from '../../db/indexedDb';
 
+import ChatBotFlotante from "./ChatBotFlotante";
+
+
 export type Elemento = {
   id: string;
   tipo: string;
@@ -86,6 +89,8 @@ export default function Diagramador() {
   const deviceRef = useRef<DeviceKey>("phoneStandard");
   useEffect(() => { tabsRef.current = tabs; }, [tabs]);
 const [proyectoCargado, setProyectoCargado] = useState(false);
+const [mostrarBot, setMostrarBot] = useState(false);
+
 
 // Solo guardar local después de que cargó al menos una vez
 useEffect(() => {
@@ -815,6 +820,7 @@ useEffect(() => {
           selectedDevice={_selectedDevice}
           onDeviceChange={setSelectedDevice}
           online={online}
+          onToggleBot={() => setMostrarBot((v) => !v)}
         />
 
         {/* Zona principal */}
@@ -961,6 +967,13 @@ useEffect(() => {
             </button>
           </div>
         </div>
+      )}
+      {mostrarBot && (
+        <ChatBotFlotante
+          onClose={() => setMostrarBot(false)}
+          proyectoId={projectId!}
+          tabNombre={selectedTab?.name || "Pantalla"}
+        />
       )}
 
     </DndProvider>
