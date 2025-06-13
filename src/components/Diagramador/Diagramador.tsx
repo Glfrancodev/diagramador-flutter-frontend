@@ -19,7 +19,8 @@ import { io } from "socket.io-client";
 
 
 import useOnlineStatus from "../../hooks/useOnlineStatus";
-
+import { guardarCambioOffline, guardarProyectoOffline } from "../../db/utils";
+import { db } from '../../db/indexedDb';
 
 export type Elemento = {
   id: string;
@@ -78,12 +79,28 @@ export default function Diagramador() {
   const [showInvite, setShowInvite] = useState(false);
   const [inviteUuid, setInviteUuid] = useState("");
   const [invitaciones, setInvitaciones] = useState<Invitacion[]>([]);
-  const [paletteCollapsed,    setPaletteCollapsed]    = useState(false);
+  const [paletteCollapsed, setPaletteCollapsed] = useState(false);
   const [propsPanelCollapsed, setPropsPanelCollapsed] = useState(false);
 
   const tabsRef = useRef(tabs);
   const deviceRef = useRef<DeviceKey>("phoneStandard");
   useEffect(() => { tabsRef.current = tabs; }, [tabs]);
+  useEffect(() => {
+    if (!projectId) return;
+
+    guardarProyectoOffline({
+      id: projectId,
+      nombre: nombreProyecto,
+      contenido: {
+        pestañas: tabs,
+        clases: [], // si no tenés clases aún, igual lo dejamos vacío
+        relaciones: [],
+        clavesPrimarias: {},
+      },
+      actualizadoEn: Date.now(), // este campo lo añade internamente en la función, así que se puede omitir
+    });
+  }, [tabs, nombreProyecto, projectId]);
+
   useEffect(() => { deviceRef.current = _selectedDevice; }, [_selectedDevice]);
 
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -93,6 +110,73 @@ export default function Diagramador() {
 
   const cursorTabsRef = useRef<{ [socketId: string]: string }>({});
   const online = useOnlineStatus();
+
+useEffect(() => {
+  if (!online || !projectId) return;
+
+  const sincronizar = async () => {
+    try {
+      const proyecto = await db.proyectosOffline.get(projectId);
+      const cambios = await db.cambiosPendientes
+        .where("proyectoId")
+        .equals(projectId)
+        .sortBy("timestamp");
+
+      if (!proyecto || !proyecto.contenido) return;
+
+      // 1. Clonar el contenido
+      const actualizado = structuredClone(proyecto.contenido);
+
+      // 2. Aplicar cambios pendientes
+      for (const cambio of cambios) {
+        const pestaña = actualizado.pestañas.find((p: any) =>
+          p.elementos.some((e: any) => e.id === cambio.elementoId)
+        );
+
+        if (cambio.tipo === "borrado") {
+          for (const tab of actualizado.pestañas) {
+            tab.elementos = tab.elementos.filter((el: any) => el.id !== cambio.elementoId);
+          }
+        } else if (cambio.tipo === "nuevo") {
+          // asumimos que datos.tabId existe
+          const tab = actualizado.pestañas.find((t: any) => t.id === cambio.datos.tabId);
+          if (tab) tab.elementos.push(cambio.datos);
+        } else if (cambio.tipo === "actualizacion") {
+          if (pestaña) {
+            pestaña.elementos = pestaña.elementos.map((el: any) =>
+              el.id === cambio.elementoId ? cambio.datos : el
+            );
+          }
+        }
+      }
+
+      // 3. Enviar al servidor
+      await axiosInstance.put(`/proyectos/${projectId}`, {
+        contenido: JSON.stringify(actualizado),
+      });
+
+      // 4. Limpiar cambios locales
+      await db.cambiosPendientes.where("proyectoId").equals(projectId).delete();
+
+      // 5. Actualizar copia local
+      await guardarProyectoOffline({
+        id: projectId,
+        nombre: proyecto.nombre,
+        contenido: actualizado,
+        actualizadoEn: Date.now(),
+      });
+
+      console.log("✅ Proyecto sincronizado con éxito");
+    } catch (e) {
+      console.error("❌ Error al sincronizar cambios pendientes", e);
+    }
+  };
+
+  sincronizar();
+}, [online, projectId]);
+
+
+
 
   //nueva implementación de cursores
   const selectedTabRef = useRef(selectedTabId);
@@ -108,17 +192,6 @@ export default function Diagramador() {
     const h = hash % 360;
     return `hsl(${h}, 80%, 70%)`;
   }
-useEffect(() => {
-  const update = () => {
-    console.log("🧪 Estado de conexión:", navigator.onLine ? "ONLINE" : "OFFLINE");
-  };
-  window.addEventListener("online", update);
-  window.addEventListener("offline", update);
-  return () => {
-    window.removeEventListener("online", update);
-    window.removeEventListener("offline", update);
-  };
-}, []);
 
   useEffect(() => {
     const scroll = scrollRef.current;
@@ -146,12 +219,12 @@ useEffect(() => {
   }, []);
   // ---  selecciones remotas  ---
   type RemoteSel = {
-  socketId : string;
-  tabId    : string;
-  elementId: string | null;
-  name     : string;
-  color    : string;          // ← nuevo
-};
+    socketId: string;
+    tabId: string;
+    elementId: string | null;
+    name: string;
+    color: string;          // ← nuevo
+  };
 
   const remoteSelectionsRef = useRef<{ [socketId: string]: RemoteSel }>({});
   const [remoteSelVersion, setRemoteSelVersion] = useState(0); // fuerza rerender
@@ -159,14 +232,14 @@ useEffect(() => {
   // Avisar a los demás qué elemento tengo seleccionado
   useEffect(() => {
     if (!socketRef.current?.connected) return;
-      socketRef.current.emit("selectElement", {
-        projectId,
-        tabId     : selectedTabId,
-        elementId : selectedElementId,                    // puede ser null
-        name      : localStorage.getItem("nombre") || "Invitado",
-        socketId  : mySocketIdRef.current,
-        color     : colorFromSocketId(mySocketIdRef.current),  // ← NUEVO
-      });
+    socketRef.current.emit("selectElement", {
+      projectId,
+      tabId: selectedTabId,
+      elementId: selectedElementId,                    // puede ser null
+      name: localStorage.getItem("nombre") || "Invitado",
+      socketId: mySocketIdRef.current,
+      color: colorFromSocketId(mySocketIdRef.current),  // ← NUEVO
+    });
   }, [selectedElementId, selectedTabId, projectId]);
   useEffect(() => {
     setRemoteSelVersion(v => v + 1);   // rehace el filtro por tab
@@ -244,16 +317,16 @@ useEffect(() => {
 
     const socket = io(import.meta.env.VITE_SOCKET_URL || "http://localhost:3000");
     socketRef.current = socket;
-socket.on("selectElement", (data: RemoteSel & { projectId: string }) => {
-  if (data.projectId !== projectId || data.socketId === mySocketIdRef.current) return;
+    socket.on("selectElement", (data: RemoteSel & { projectId: string }) => {
+      if (data.projectId !== projectId || data.socketId === mySocketIdRef.current) return;
 
-  if (!data.elementId) {
-    delete remoteSelectionsRef.current[data.socketId];      // des-selección
-  } else {
-    remoteSelectionsRef.current[data.socketId] = data;      // 🔹 ahora `data` YA trae `color`
-  }
-  setRemoteSelVersion(v => v + 1);
-});
+      if (!data.elementId) {
+        delete remoteSelectionsRef.current[data.socketId];      // des-selección
+      } else {
+        remoteSelectionsRef.current[data.socketId] = data;      // 🔹 ahora `data` YA trae `color`
+      }
+      setRemoteSelVersion(v => v + 1);
+    });
 
 
     socket.on("connect", () => {
@@ -526,11 +599,24 @@ socket.on("selectElement", (data: RemoteSel & { projectId: string }) => {
           socketId: mySocketIdRef.current,
           elementos: newTab.elementos,
         });
+
+        // 🧠 Guardar cambios offline si no hay conexión
+        if (!online) {
+          for (const el of newTab.elementos) {
+            guardarCambioOffline({
+              proyectoId: projectId!,
+              tipo: "actualizacion",
+              elementoId: el.id,
+              datos: el,
+            });
+          }
+        }
       }
 
       return updated;
     });
   };
+
 
 
   const selectedTab = tabs.find((t) => t.id === selectedTabId);
@@ -552,7 +638,6 @@ socket.on("selectElement", (data: RemoteSel & { projectId: string }) => {
           : tab
       );
 
-      // 🔄 Emitimos los nuevos elementos al servidor
       const newTab = updated.find((t) => t.id === selectedTab.id);
       if (newTab) {
         socketRef.current?.emit("canvasUpdate", {
@@ -561,6 +646,19 @@ socket.on("selectElement", (data: RemoteSel & { projectId: string }) => {
           socketId: mySocketIdRef.current,
           elementos: newTab.elementos,
         });
+
+        // 🆕 guardar cambio offline
+        if (!online) {
+          const actualizado = newTab.elementos.find(el => el.id === selectedElementId);
+          if (actualizado) {
+            guardarCambioOffline({
+              proyectoId: projectId!,
+              tipo: "actualizacion",
+              elementoId: actualizado.id,
+              datos: actualizado,
+            });
+          }
+        }
       }
 
       return updated;
@@ -568,8 +666,10 @@ socket.on("selectElement", (data: RemoteSel & { projectId: string }) => {
   };
 
 
+
   const deleteElemento = () => {
     if (!selectedElementId || !selectedTab) return;
+
     setTabs((prev) =>
       prev.map((tab) =>
         tab.id === selectedTab.id
@@ -580,8 +680,20 @@ socket.on("selectElement", (data: RemoteSel & { projectId: string }) => {
           : tab
       )
     );
+
+    // 🔌 Si está offline, registrar el borrado
+    if (!online && projectId) {
+      guardarCambioOffline({
+        proyectoId: projectId,
+        tipo: "borrado",
+        elementoId: selectedElementId,
+        datos: null,
+      });
+    }
+
     setSelectedElementId(null);
   };
+
 
   useEffect(() => {
     const isTextEditing = (el: Element | null) => {
@@ -705,9 +817,9 @@ socket.on("selectElement", (data: RemoteSel & { projectId: string }) => {
           {/* Paleta */}
           <div
             style={{
-              width:      paletteCollapsed ? 10  : 200,
-              minWidth:   paletteCollapsed ? 10  : 200,
-              maxWidth:   paletteCollapsed ? 10  : 200,
+              width: paletteCollapsed ? 10 : 200,
+              minWidth: paletteCollapsed ? 10 : 200,
+              maxWidth: paletteCollapsed ? 10 : 200,
               flexShrink: 0,
               backgroundColor: "#f7f7f7",
               borderRight: "1px solid #ccc",
@@ -746,8 +858,8 @@ socket.on("selectElement", (data: RemoteSel & { projectId: string }) => {
                   onChange={updateElementos}
                   onSelect={setSelectedElementId}
                   selectedElementId={selectedElementId}
-                    remoteSelections={Object.values(remoteSelectionsRef.current)
-                     .filter(sel => sel.tabId === selectedTabId)}
+                  remoteSelections={Object.values(remoteSelectionsRef.current)
+                    .filter(sel => sel.tabId === selectedTabId)}
                 />
               )}
             </div>
@@ -756,9 +868,9 @@ socket.on("selectElement", (data: RemoteSel & { projectId: string }) => {
           {/* Panel de propiedades con scroll */}
           <div
             style={{
-              width:      propsPanelCollapsed ? 10  : 280,
-              minWidth:   propsPanelCollapsed ? 10  : 280,
-              maxWidth:   propsPanelCollapsed ? 10  : 280,
+              width: propsPanelCollapsed ? 10 : 280,
+              minWidth: propsPanelCollapsed ? 10 : 280,
+              maxWidth: propsPanelCollapsed ? 10 : 280,
               backgroundColor: "#fafafa",
               borderLeft: "1px solid #ccc",
               boxSizing: "border-box",
@@ -767,7 +879,7 @@ socket.on("selectElement", (data: RemoteSel & { projectId: string }) => {
               overflow: "hidden",
             }}
           >
-          <div style={{ flex: 1, overflowY: "auto", padding: propsPanelCollapsed ? 0 : 10 }}>
+            <div style={{ flex: 1, overflowY: "auto", padding: propsPanelCollapsed ? 0 : 10 }}>
               <PropiedadesPanel
                 elemento={selectedElement}
                 onUpdate={updateElemento}
