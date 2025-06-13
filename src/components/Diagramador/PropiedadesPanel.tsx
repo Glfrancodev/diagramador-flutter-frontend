@@ -6,16 +6,88 @@ import ModalSeleccionImagen from './modales/ModalSeleccionImagen';
 import ModalSeleccionAudio from './modales/ModalSeleccionAudio';
 import ModalSeleccionIcono from './modales/ModalSeleccionIcono'; // asegúrate de importar correctamente
 
+function BotonColapsar({ onToggle }: { onToggle: () => void }) {
+  return (
+    <button
+      onClick={onToggle}
+      style={{
+        position: "absolute",
+        top: 4,
+        right: 4,
+        background: "#2563eb",
+        color: "#fff",
+        border: "none",
+        borderRadius: 6,
+        cursor: "pointer",
+        padding: "2px 6px",
+      }}
+    >
+      ❮
+    </button>
+  );
+}
 
 type Props = {
   elemento: Elemento | null;
   onUpdate: (fn: (el: Elemento) => Elemento) => void;
   canvasHeight: number; // ✅ nuevo
   proyectoId: string; // <- ✅ nuevo
+  collapsed: boolean;
+  onToggle: () => void;
 };
 
-export default function PropiedadesPanel({ elemento, onUpdate, canvasHeight, proyectoId}: Props) {
-  if (!elemento) return <div style={{ padding: 10 }}>Selecciona un elemento…</div>;
+export default function PropiedadesPanel({ elemento, onUpdate, canvasHeight, proyectoId, collapsed, onToggle,}: Props) {
+    if (collapsed) {
+    return (
+      <div
+        style={{
+          height: "100%",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        <button
+          onClick={onToggle}
+          style={{
+            writingMode: "vertical-rl",
+            background: "#2563eb",
+            color: "#fff",
+            border: "none",
+            borderRadius: 6,
+            cursor: "pointer",
+            padding: 4,
+          }}
+        >
+          ❯
+        </button>
+      </div>
+    );
+  }
+
+  /* ---------- Vista expandida (igual que antes + botón) ---------- */
+  if (!elemento)
+    return (
+      <div style={{ padding: 10, position: "relative" }}>
+        <button
+          onClick={onToggle}
+          style={{
+            position: "absolute",
+            top: 4,
+            right: 4,
+            background: "#2563eb",
+            color: "#fff",
+            border: "none",
+            borderRadius: 6,
+            cursor: "pointer",
+            padding: "2px 6px",
+          }}
+        >
+          ❮
+        </button>
+        Selecciona un elemento…
+      </div>
+    );
 
   const set = (p: any) =>
     onUpdate((el) => ({ ...el, props: { ...el.props, ...p } }));
@@ -50,6 +122,7 @@ export default function PropiedadesPanel({ elemento, onUpdate, canvasHeight, pro
 
 /* ------------------- SELECTOR ------------------- */
 if (elemento.tipo === 'Selector') {
+  
   const lista = elemento.props?.options ?? [];
   const [texto, setTexto] = useState(lista.join('\n'));
 
@@ -60,9 +133,11 @@ if (elemento.tipo === 'Selector') {
     });
   };
 
-  return (
-    <div style={{ padding: 10 }}>
-      <h4>Selector</h4>
+return (
+  <div style={{ padding: 10, position: 'relative', paddingTop: 26 }}>
+    <BotonColapsar onToggle={onToggle} />
+    <h4>Selector</h4>
+
 
       <label style={{ display: 'block', marginBottom: 6 }}>
         Opciones (una por línea)
@@ -96,7 +171,8 @@ if (elemento.tipo === 'Selector') {
   /* ------------------- BOTÓN ------------------- */
   if (elemento.tipo === 'Boton') {
     return (
-      <div style={{ padding: 10 }}>
+  <div style={{ padding: 10, position: 'relative', paddingTop: 26 }}>
+    <BotonColapsar onToggle={onToggle} />
         <h4>Botón</h4>
 
         <label style={{ display: 'block', marginBottom: 6 }}>
@@ -161,7 +237,8 @@ if (elemento.tipo === 'Selector') {
 /* ------------------- CHECKBOX ------------------- */
   if (elemento.tipo === 'Checkbox') {
     return (
-      <div style={{ padding: 10 }}>
+  <div style={{ padding: 10, position: 'relative', paddingTop: 26 }}>
+    <BotonColapsar onToggle={onToggle} />
         <h4>Checkbox</h4>
 
         <label style={{ display: 'block', marginBottom: 6 }}>
@@ -201,7 +278,8 @@ if (elemento.tipo === 'Tabla') {
   const pxToRel = (px: number) => +(px / canvasHeight).toFixed(4);
 
   return (
-    <div style={{ padding: 10 }}>
+  <div style={{ padding: 10, position: 'relative', paddingTop: 26 }}>
+    <BotonColapsar onToggle={onToggle} />
       <h4>Tabla</h4>
 
       <label>
@@ -318,7 +396,8 @@ if (elemento.tipo === 'Tabla') {
   /* ------------------- LINK ------------------- */
   if (elemento.tipo === 'Link') {
     return (
-      <div style={{ padding: 10 }}>
+  <div style={{ padding: 10, position: 'relative', paddingTop: 26 }}>
+    <BotonColapsar onToggle={onToggle} />
         <h4>Enlace</h4>
 
         <label style={{ display: 'block', marginBottom: 6 }}>
@@ -389,7 +468,8 @@ if (elemento.tipo === 'Sidebar') {
   };
 
   return (
-    <div style={{ padding: 10, maxHeight: '100%', overflowY: 'auto' }}>
+    <div style={{ padding: 10, position: 'relative', paddingTop: 26, maxHeight: '100%', overflowY: 'auto' }}>
+    <BotonColapsar onToggle={onToggle} />
       <h4>Sidebar</h4>
       <label style={{ display: 'block', marginBottom: 6 }}>
         Tamaño de texto (px):
@@ -528,7 +608,8 @@ if (elemento.tipo === 'Sidebar') {
 /* ------------------- LABEL ------------------- */
 if (elemento.tipo === 'Label') {
   return (
-    <div style={{ padding: 10 }}>
+    <div style={{ padding: 10, position: 'relative', paddingTop: 26, maxHeight: '100%', overflowY: 'auto' }}>
+    <BotonColapsar onToggle={onToggle} />
       <h4>Etiqueta</h4>
 
       <label style={{ display: 'block', marginBottom: 6 }}>
@@ -582,7 +663,8 @@ if (elemento.tipo === 'Label') {
 
 if (elemento.tipo === 'InputBox') {
   return (
-    <div style={{ padding: 10 }}>
+    <div style={{ padding: 10, position: 'relative', paddingTop: 26, maxHeight: '100%', overflowY: 'auto' }}>
+    <BotonColapsar onToggle={onToggle} />
       <h4>Campo de texto</h4>
 
       <label style={{ display: 'block', marginBottom: 6 }}>
@@ -617,7 +699,8 @@ if (elemento.tipo === 'InputBox') {
 /* ------------------- INPUTFECHA ------------------- */
 if (elemento.tipo === 'InputFecha') {
   return (
-    <div style={{ padding: 10 }}>
+    <div style={{ padding: 10, position: 'relative', paddingTop: 26, maxHeight: '100%', overflowY: 'auto' }}>
+    <BotonColapsar onToggle={onToggle} />
       <h4>Campo de fecha</h4>
 
       <label style={{ display: 'block', marginBottom: 6 }}>
@@ -646,7 +729,8 @@ if (elemento.tipo === 'Imagen') {
     onUpdate((el) => ({ ...el, props: { ...el.props, ...p } }));
 
   return (
-    <div style={{ padding: 10 }}>
+    <div style={{ padding: 10, position: 'relative', paddingTop: 26, maxHeight: '100%', overflowY: 'auto' }}>
+    <BotonColapsar onToggle={onToggle} />
       <h4>Imagen</h4>
 
       <button
@@ -723,7 +807,8 @@ if (elemento.tipo === 'Video') {
   const [showSelector, setShowSelector] = useState(false);
 
   return (
-    <div style={{ padding: 10 }}>
+    <div style={{ padding: 10, position: 'relative', paddingTop: 26, maxHeight: '100%', overflowY: 'auto' }}>
+    <BotonColapsar onToggle={onToggle} />
       <h4>Video</h4>
 
       <button
@@ -815,7 +900,8 @@ if (elemento.tipo === 'Audio') {
   const [showSelector, setShowSelector] = useState(false);
 
   return (
-    <div style={{ padding: 10 }}>
+    <div style={{ padding: 10, position: 'relative', paddingTop: 26, maxHeight: '100%', overflowY: 'auto' }}>
+    <BotonColapsar onToggle={onToggle} />
       <h4>Audio</h4>
 
       <button
@@ -905,7 +991,8 @@ if (elemento.tipo === 'Audio') {
 /* ------------------- PÁRRAFO ------------------- */
 if (elemento.tipo === 'Parrafo') {
   return (
-    <div style={{ padding: 10 }}>
+    <div style={{ padding: 10, position: 'relative', paddingTop: 26, maxHeight: '100%', overflowY: 'auto' }}>
+    <BotonColapsar onToggle={onToggle} />
       <h4>Párrafo</h4>
 
       <label style={{ display: 'block', marginBottom: 6 }}>
@@ -1014,7 +1101,8 @@ if (elemento.tipo === 'BottomNavbar') {
   };
 
   return (
-    <div style={{ padding: 10 }}>
+    <div style={{ padding: 10, position: 'relative', paddingTop: 26, maxHeight: '100%', overflowY: 'auto' }}>
+    <BotonColapsar onToggle={onToggle} />
       <h4>Barra inferior</h4>
 
       {/* Tamaño de texto */}
@@ -1170,9 +1258,10 @@ if (elemento.tipo === 'BottomNavbar') {
 }
 
 
-if (elemento.tipo === 'Cuadrado' || elemento.tipo === 'Circulo') {
+if (elemento.tipo === 'Cuadrado') {
   return (
-    <div style={{ padding: 10 }}>
+    <div style={{ padding: 10, position: 'relative', paddingTop: 26, maxHeight: '100%', overflowY: 'auto' }}>
+    <BotonColapsar onToggle={onToggle} />
       <h4>{elemento.tipo}</h4>
 
       <label style={{ display: 'block', marginBottom: 6 }}>
@@ -1185,17 +1274,6 @@ if (elemento.tipo === 'Cuadrado' || elemento.tipo === 'Circulo') {
         />
       </label>
 
-      <label style={{ display: 'block', marginBottom: 6 }}>
-        Tamaño:
-        <input
-          type="number"
-          min={8}
-          max={300}
-          value={relToPx(elemento.props?.size ?? 0.1)} // Muestra en px reales
-          onChange={(e) => set({ size: pxToRel(Number(e.target.value) || 100) })}
-          style={{ width: '100%', marginTop: 4 }}
-        />
-      </label>
 <label style={{ display: 'block', marginBottom: 6 }}>
   Radio del borde (px):
   <input
@@ -1234,6 +1312,27 @@ if (elemento.tipo === 'Cuadrado' || elemento.tipo === 'Circulo') {
 </div>
 
 
+      {bloqueBase}
+    </div>
+  );
+}
+
+
+if (elemento.tipo === 'Circulo') {
+  return (
+    <div style={{ padding: 10, position: 'relative', paddingTop: 26, maxHeight: '100%', overflowY: 'auto' }}>
+    <BotonColapsar onToggle={onToggle} />
+      <h4>{elemento.tipo}</h4>
+
+      <label style={{ display: 'block', marginBottom: 6 }}>
+        Color:
+        <input
+          type="color"
+          value={elemento.props?.color || '#000000'}
+          onChange={(e) => set({ color: e.target.value })}
+          style={{ width: '100%', marginTop: 4 }}
+        />
+      </label>
       {bloqueBase}
     </div>
   );

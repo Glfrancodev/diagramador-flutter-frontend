@@ -1,12 +1,17 @@
 import { useState, useRef, useEffect } from 'react';
 import { useDrag } from 'react-dnd';
 
+type Props = {
+  collapsed: boolean;
+  onToggle: () => void;
+};
+
 const CATEGORIAS = [
   {
     nombre: "Básicos",
     componentes: [
       { tipo: "Label", label: "Etiqueta" },
-      { tipo: "Parrafo", label: "Parrafo" },
+      { tipo: "Parrafo", label: "Párrafo" },
       { tipo: "InputBox", label: "Campo de texto" },
       { tipo: "InputFecha", label: "Fecha" },
       { tipo: "Selector", label: "Selector" },
@@ -27,8 +32,7 @@ const CATEGORIAS = [
     nombre: "Navegación",
     componentes: [
       { tipo: "Sidebar", label: "Sidebar" },
-      { tipo: 'BottomNavbar', label: 'Barra inferior' }
-
+      { tipo: "BottomNavbar", label: "Barra inferior" },
     ],
   },
   {
@@ -41,23 +45,71 @@ const CATEGORIAS = [
   },
 ];
 
-export default function SidebarPaleta() {
+export default function SidebarPaleta({ collapsed, onToggle }: Props) {
   const [abierto, setAbierto] = useState<{ [key: string]: boolean }>({});
 
-  const toggle = (categoria: string) => {
+  const toggleCategoria = (categoria: string) => {
     setAbierto((prev) => ({
       ...prev,
       [categoria]: !prev[categoria],
     }));
   };
 
+  if (collapsed) {
+    // Vista minimizada: solo el botón expandir vertical
+    return (
+      <div
+        style={{
+          height: '100%',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+      >
+        <button
+          onClick={onToggle}
+          style={{
+            writingMode: 'vertical-rl',
+            transform: 'rotate(180deg)',
+            background: '#2563eb',
+            color: '#fff',
+            border: 'none',
+            borderRadius: 6,
+            cursor: 'pointer',
+            padding: 4,
+          }}
+        >
+          ❯
+        </button>
+      </div>
+    );
+  }
+
   return (
     <div style={{ height: '100%', overflowY: 'auto', paddingRight: 6 }}>
-      <h3 style={{ marginTop: 0 }}>Paleta</h3>
+      {/* Botón para minimizar */}
+      <button
+        onClick={onToggle}
+        style={{
+          background: '#2563eb',
+          color: '#fff',
+          border: 'none',
+          borderRadius: 6,
+          cursor: 'pointer',
+          padding: '2px 6px',
+          float: 'right',
+          marginBottom: 8,
+        }}
+      >
+        ❮
+      </button>
+
+      <h3 style={{ marginTop: 0, clear: 'both' }}>Paleta</h3>
+
       {CATEGORIAS.map((cat) => (
         <div key={cat.nombre} style={{ marginBottom: 10 }}>
           <div
-            onClick={() => toggle(cat.nombre)}
+            onClick={() => toggleCategoria(cat.nombre)}
             style={{
               cursor: 'pointer',
               fontWeight: 'bold',
@@ -75,6 +127,7 @@ export default function SidebarPaleta() {
             </span>
             {cat.nombre}
           </div>
+
           {abierto[cat.nombre] && (
             <div style={{ paddingLeft: 8, marginTop: 6 }}>
               {cat.componentes.map((c) => (

@@ -73,7 +73,8 @@ export default function Diagramador() {
   const [showInvite, setShowInvite] = useState(false);
   const [inviteUuid, setInviteUuid] = useState("");
   const [invitaciones, setInvitaciones] = useState<Invitacion[]>([]);
-
+  const [paletteCollapsed,    setPaletteCollapsed]    = useState(false);
+  const [propsPanelCollapsed, setPropsPanelCollapsed] = useState(false);
 
   const tabsRef = useRef(tabs);
   const deviceRef = useRef<DeviceKey>("phoneStandard");
@@ -182,9 +183,10 @@ export default function Diagramador() {
   }, [projectId, navigate]);
   useEffect(() => {
     const canvas = scrollRef.current;
-    if (!canvas || !socketRef.current?.connected) return;
+    if (!canvas) return;
 
     const handleMove = (e: MouseEvent) => {
+      if (!socketRef.current?.connected) return;
       const canvas = scrollRef.current;
       const realCanvas = canvas?.querySelector("div > div"); // ⬅️ el div interno del canvas
 
@@ -218,7 +220,7 @@ export default function Diagramador() {
 
     canvas.addEventListener("mousemove", handleMove);
     return () => canvas.removeEventListener("mousemove", handleMove);
-  }, [selectedTabId, projectId]);
+  }, [selectedTabId]);
 
   useEffect(() => {
     if (!projectId) return;
@@ -685,9 +687,9 @@ socket.on("selectElement", (data: RemoteSel & { projectId: string }) => {
           {/* Paleta */}
           <div
             style={{
-              width: 200,
-              minWidth: 200,
-              maxWidth: 200,
+              width:      paletteCollapsed ? 10  : 200,
+              minWidth:   paletteCollapsed ? 10  : 200,
+              maxWidth:   paletteCollapsed ? 10  : 200,
               flexShrink: 0,
               backgroundColor: "#f7f7f7",
               borderRight: "1px solid #ccc",
@@ -695,7 +697,10 @@ socket.on("selectElement", (data: RemoteSel & { projectId: string }) => {
               boxSizing: "border-box",
             }}
           >
-            <SidebarPaleta />
+            <SidebarPaleta
+              collapsed={paletteCollapsed}
+              onToggle={() => setPaletteCollapsed(!paletteCollapsed)}
+            />
           </div>
 
           {/* Canvas */}
@@ -733,9 +738,9 @@ socket.on("selectElement", (data: RemoteSel & { projectId: string }) => {
           {/* Panel de propiedades con scroll */}
           <div
             style={{
-              width: 280,
-              minWidth: 280,
-              maxWidth: 280,
+              width:      propsPanelCollapsed ? 10  : 280,
+              minWidth:   propsPanelCollapsed ? 10  : 280,
+              maxWidth:   propsPanelCollapsed ? 10  : 280,
               backgroundColor: "#fafafa",
               borderLeft: "1px solid #ccc",
               boxSizing: "border-box",
@@ -744,12 +749,14 @@ socket.on("selectElement", (data: RemoteSel & { projectId: string }) => {
               overflow: "hidden",
             }}
           >
-            <div style={{ flex: 1, overflowY: "auto", padding: 10 }}>
+          <div style={{ flex: 1, overflowY: "auto", padding: propsPanelCollapsed ? 0 : 10 }}>
               <PropiedadesPanel
                 elemento={selectedElement}
                 onUpdate={updateElemento}
-                canvasHeight={device.height} // ✅ agregar
-                proyectoId={projectId!} // ✅ esto es lo correcto
+                canvasHeight={device.height}
+                proyectoId={projectId!}
+                collapsed={propsPanelCollapsed}
+                onToggle={() => setPropsPanelCollapsed(!propsPanelCollapsed)}
               />
             </div>
           </div>
